@@ -42,5 +42,5 @@ sql-migrator refresh [migrations-directory]
 ```
 Complete cleaning of all migrations:
 ```bigquery
-sql-migrator clean [migrations-directory]
+sql-migrator clean
 ```
