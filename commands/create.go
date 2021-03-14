@@ -91,13 +91,12 @@ func (c *CreateCommand) createMigration() error {
 func (c *CreateCommand) parseFlags(args []string) error {
 	flags := flag.NewFlagSet("create", flag.ContinueOnError)
 	flags.Parse(args)
-
 	switch len(args) {
 	case 2:
 		migrationDir = flags.Arg(0)
 		migrationName = flags.Arg(1)
 	case 1:
-		migrationName = flags.Arg(1)
+		migrationName = flags.Arg(0)
 	default:
 		return errors.New("migration name is required")
 	}

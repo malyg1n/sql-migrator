@@ -102,7 +102,7 @@ func (c *AbstractCommand) getMigrationsFromBD() ([]*MigrationEntity, error) {
 }
 
 func (c *AbstractCommand) getMigrationsByVersion(version uint) ([]*MigrationEntity, error) {
-	query := fmt.Sprintf("SELECT * FROM %s WHERE version=%d", migrationTableName, version)
+	query := fmt.Sprintf("SELECT * FROM %s WHERE version=%d ORDER BY created_at DESC", migrationTableName, version)
 	rows, err := c.db.Query(query)
 	if err != nil {
 		return nil, err
@@ -161,7 +161,7 @@ func (c *AbstractCommand) getLatestVersionNumber() (uint, error) {
 	} else {
 		row.Scan(&me.Id, &me.Migration, &me.Version, &me.CreatedAt)
 		if me.Version == 0 {
-			return 0, errors.New("can not find version number")
+			return 1, nil
 		}
 		versionNumber = me.Version
 	}
