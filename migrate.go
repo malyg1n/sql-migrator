@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"github.com/joho/godotenv"
-	"github.com/malyg1n/sqlx-migrator.git/commands"
-	"github.com/malyg1n/sqlx-migrator.git/configs"
+	"github.com/malyg1n/sqlx-migrator/commands"
+	"github.com/malyg1n/sqlx-migrator/configs"
 	"log"
 	"os"
 

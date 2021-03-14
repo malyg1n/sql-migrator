@@ -1,4 +1,4 @@
-module github.com/malyg1n/sqlx-migrator.git
+module github.com/malyg1n/sqlx-migrator
 
 go 1.16
 

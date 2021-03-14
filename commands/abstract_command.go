@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"github.com/malyg1n/sqlx-migrator.git/configs"
+	"github.com/malyg1n/sqlx-migrator/configs"
 )
 
 const (

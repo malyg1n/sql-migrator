@@ -1,6 +1,6 @@
 package commands
 
-import "github.com/malyg1n/sqlx-migrator.git/configs"
+import "github.com/malyg1n/sqlx-migrator/configs"
 
 type DownCommand struct {
 	AbstractCommand
