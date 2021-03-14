@@ -1,4 +1,4 @@
-# slqx-migrator
+# slq-migrator
 
 [![Version](https://img.shields.io/badge/version-v0.0.3-green.svg)](https://github.com/malyg1n/sql-migrator/releases)
 
