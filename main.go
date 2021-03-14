@@ -25,13 +25,13 @@ func main() {
 	}
 
 	cfg := configs.NewDBConfig()
-	db, err := initDB(cfg)
+	db, err := InitDB(cfg)
 	if err != nil {
 		output.ShowError(err.Error())
 		os.Exit(1)
 	}
 
-	status, err := initCommands(db)
+	status, err := InitCommands(db)
 	if err != nil {
 		output.ShowError(err.Error())
 		os.Exit(1)
@@ -41,8 +41,8 @@ func main() {
 }
 
 // Init list of commands
-func initCommands(db *sql.DB) (int, error) {
-	c := cli.NewCLI("migrate", "0.0.1")
+func InitCommands(db *sql.DB) (int, error) {
+	c := cli.NewCLI("migrator", "0.0.3")
 	c.Args = os.Args[1:]
 	c.Commands = map[string]cli.CommandFactory{
 		"create": func() (cli.Command, error) {
@@ -66,8 +66,8 @@ func initCommands(db *sql.DB) (int, error) {
 }
 
 // Init connect to database
-func initDB(cfg *configs.DBConfig) (*sql.DB, error) {
-	dsn, err := getDSN(cfg)
+func InitDB(cfg *configs.DBConfig) (*sql.DB, error) {
+	dsn, err := GetDSN(cfg)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func initDB(cfg *configs.DBConfig) (*sql.DB, error) {
 }
 
 // Get dsn string for database connection
-func getDSN(cfg *configs.DBConfig) (string, error) {
+func GetDSN(cfg *configs.DBConfig) (string, error) {
 	var dsn string
 	switch cfg.Driver {
 	case "postgres":
@@ -105,12 +105,12 @@ func getDSN(cfg *configs.DBConfig) (string, error) {
 			cfg.Port,
 			cfg.Name,
 		)
-	case "sqlite":
-		dsn = fmt.Sprintf("file:%s?cache=%s&mode%s")
+	case "sqlite3":
+		dsn = fmt.Sprintf("file:%s?cache=%s&mode=%s", cfg.File, cfg.Cache, cfg.Mode)
 	default:
 		dsn := os.Getenv("DB_DSN")
 		if dsn == "" {
-			return dsn, errors.New("supports only postgres, mysql and sqlite")
+			return dsn, errors.New("you must specify the dsn for the database")
 		}
 		return dsn, nil
 	}
