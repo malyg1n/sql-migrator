@@ -191,7 +191,7 @@ func (c *AbstractCommand) rollbackMigration(entity *MigrationEntity) error {
 	return nil
 }
 
-func (c *AbstractCommand) deleteAllMigrations() error {
+func (c *AbstractCommand) downAllMigrations() error {
 	return nil
 }
 

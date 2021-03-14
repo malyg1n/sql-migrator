@@ -21,7 +21,7 @@ func NewRefreshCommand(db *sql.DB) *RefreshCommand {
 
 func (c *RefreshCommand) Help() string {
 	helpText := `
-Usage: sql-migrator refresh [directory] ...
+Usage: sql-migrator refresh [directory]
   Refresh all migrations.
 Options:
   directory              Directory with migration files (default migrations).

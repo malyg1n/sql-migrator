@@ -57,6 +57,9 @@ func initCommands(db *sql.DB) (int, error) {
 		"refresh": func() (cli.Command, error) {
 			return commands.NewRefreshCommand(db), nil
 		},
+		"clean": func() (cli.Command, error) {
+			return commands.NewCleanCommand(db), nil
+		},
 	}
 
 	return c.Run()

@@ -38,7 +38,7 @@ Options:
 
 // Show info about command
 func (c *CreateCommand) Synopsis() string {
-	return "Create a new migration"
+	return "Create a new migration."
 }
 
 // Execute command

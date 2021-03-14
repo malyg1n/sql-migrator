@@ -2,6 +2,8 @@ package commands
 
 import (
 	"database/sql"
+	"github.com/malyg1n/sql-migrator/output"
+	"strings"
 )
 
 type CleanCommand struct {
@@ -17,13 +19,30 @@ func NewCleanCommand(db *sql.DB) *CleanCommand {
 }
 
 func (c *CleanCommand) Help() string {
-	return ""
+	helpText := `
+Usage: sql-migrator clean
+  Down all migrations.
+`
+	return strings.TrimSpace(helpText)
 }
 
 func (c *CleanCommand) Synopsis() string {
-	return ""
+	return "Down all migrations."
 }
 
 func (c *CleanCommand) Run(args []string) int {
-	return 0
+	migrations, err := c.getMigrationsFromBD()
+	if err != nil {
+		output.ShowError(err.Error())
+		return exitStatusError
+	}
+
+	for _, me := range migrations {
+		if err := c.rollbackMigration(me); err != nil {
+			output.ShowError(err.Error())
+			return exitStatusError
+		}
+	}
+
+	return exitStatusSuccess
 }
