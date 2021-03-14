@@ -1,6 +1,17 @@
 package commands
 
+import "github.com/malyg1n/sqlx-migrator.git/configs"
+
 type UpCommand struct {
+	AbstractCommand
+}
+
+func NewUpCommand(cfg *configs.DBConfig) *UpCommand {
+	return &UpCommand{
+		AbstractCommand{
+			config: cfg,
+		},
+	}
 }
 
 func (c *UpCommand) Help() string {
