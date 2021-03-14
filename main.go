@@ -5,12 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"github.com/joho/godotenv"
-	"github.com/malyg1n/sqlx-migrator/commands"
-	"github.com/malyg1n/sqlx-migrator/configs"
-	"github.com/malyg1n/sqlx-migrator/output"
+	"github.com/malyg1n/sql-migrator/commands"
+	"github.com/malyg1n/sql-migrator/configs"
+	"github.com/malyg1n/sql-migrator/output"
 	"os"
 
+	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/mitchellh/cli"
 )
 
@@ -51,6 +53,9 @@ func initCommands(db *sql.DB) (int, error) {
 		},
 		"down": func() (cli.Command, error) {
 			return commands.NewDownCommand(db), nil
+		},
+		"refresh": func() (cli.Command, error) {
+			return commands.NewRefreshCommand(db), nil
 		},
 	}
 

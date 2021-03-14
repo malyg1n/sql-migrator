@@ -3,7 +3,7 @@ package commands
 import (
 	"database/sql"
 	"flag"
-	"github.com/malyg1n/sqlx-migrator/output"
+	"github.com/malyg1n/sql-migrator/output"
 	"strings"
 )
 
@@ -21,7 +21,7 @@ func NewDownCommand(db *sql.DB) *DownCommand {
 
 func (c *DownCommand) Help() string {
 	helpText := `
-Usage: sqlx-migrator down [directory]
+Usage: sql-migrator down [directory]
   Undo a database migration.
 Options:
   directory			     Directory with migration files (default migrations).
@@ -53,7 +53,7 @@ func (c *DownCommand) Run(args []string) int {
 	migrations, err := c.getMigrationsByVersion(version)
 
 	for _, me := range migrations {
-		if err := c.deleteMigrationById(me); err != nil {
+		if err := c.rollbackMigration(me); err != nil {
 			output.ShowError(err.Error())
 			return exitStatusError
 		}

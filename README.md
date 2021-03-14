@@ -1,37 +1,46 @@
 # slqx-migrator
 
-[![Version](https://img.shields.io/badge/version-v0.0.3-green.svg)](https://github.com/malyg1n/sqlx-migrator/releases)
+[![Version](https://img.shields.io/badge/version-v0.0.3-green.svg)](https://github.com/malyg1n/sql-migrator/releases)
 
-Golang пакет для создания миграций с использованием [`database/sql`](https://golang.org/pkg/database/sql) или [`sqlx`](https://github.com/jmoiron/sqlx).
+Golang utility for managing migrations using [`database/sql`](https://golang.org/pkg/database/sql) or [`sqlx`](https://github.com/jmoiron/sqlx).
 
-## Использование
+The package includes the following drivers: [`postgres`](https://github.com/lib/pq), [`mysql`](https://github.com/go-sql-driver/mysql), [`sqlite3`](https://github.com/mattn/go-sqlite3).
+## Usage
 
-### Установка и настройка
+### Installation and setup
 ```bigquery
-go get -u github.com/malyg1n/sqlx-migrator
+go get -u github.com/malyg1n/sql-migrator
 ```
-Созадть файл ```.env```, скопировав из ```.env.example``` и указать свои настройки БД
-### Создание файлов миграций
-В корне проекта необходимо выполнить команду со следующей сигнатурой:
+Create a file ```.env``` by copying from ```.env.example``` and specify your database settings.
+### Create migration files.
+At the root of the project, you need to run a command with the following signature:
 ```bigquery
-sqlx-migrator create [migrations-directory] migration-name
+sql-migrator create [migrations-directory] migration-name
 ```
-Пример:
+Example:
 ```bigquery
-sqlx-migrator create migrations create-users-table
+sql-migrator create migrations create-users-table
 ```
-После этого в папке migrations в корне проекта появятся два файла
+After that, two files will appear in the migrations folder at the root of the project.
 ```bigquery
 [date]-create-users-table-up.sql
 [date]-create-users-table-down.sql
 ```
-В них необходимо прописать SQL код для накатывая и откатывания миграции соотвественно
-### Миграции
-Чтобы накатить миграции, воспользуйтесь командой:
+They need to write SQL code for rolling and rolling back migration, respectively.
+### Migrations
+To roll out migrations, use the command:
 ```bigquery
-sqlx-migrator up
+sql-migrator up [migrations-directory]
 ```
-B чтобы откатить:
+And to rollback:
 ```bigquery
-sqlx-migrator down
+sql-migrator down [migrations-directory]
+```
+Complete cleaning of all migrations and roll out them over again:
+```bigquery
+sql-migrator refresh [migrations-directory]
+```
+Complete cleaning of all migrations:
+```bigquery
+sql-migrator clean [migrations-directory]
 ```

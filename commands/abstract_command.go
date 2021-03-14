@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/malyg1n/sqlx-migrator/output"
+	"github.com/malyg1n/sql-migrator/output"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -60,14 +60,54 @@ func (c *AbstractCommand) createMigrationsTable() error {
 	return nil
 }
 
+func (c *AbstractCommand) applyMigrationsUp(migrationsFiles []string, version uint) error {
+	for _, file := range migrationsFiles {
+		data, err := ioutil.ReadFile(file)
+		if err != nil {
+			return err
+		}
+		migrationQuery := fmt.Sprintf("INSERT INTO %s (migration, version) VALUES ($1, $2)", migrationTableName)
+		_, err = c.db.Query(migrationQuery, file, version)
+		if err != nil {
+			return err
+		}
+
+		query := string(data)
+		_, err = c.db.Query(query)
+		if err != nil {
+			return err
+		}
+		output.ShowMessage(fmt.Sprintf("migrated: %s", file))
+	}
+	return nil
+}
+
 func (c *AbstractCommand) getMigrationsFromBD() ([]*MigrationEntity, error) {
 	migrations := make([]*MigrationEntity, 0)
-	query := fmt.Sprintf("SELECT * from %s", migrationTableName)
+	query := fmt.Sprintf("SELECT * from %s ORDER BY created_at DESC", migrationTableName)
 	rows, err := c.db.Query(query)
 	if err != nil {
 		return nil, err
 	}
 
+	for rows.Next() {
+		me := &MigrationEntity{}
+		if err := rows.Scan(&me.Id, &me.Migration, &me.Version, &me.CreatedAt); err != nil {
+			return nil, err
+		}
+		migrations = append(migrations, me)
+	}
+
+	return migrations, nil
+}
+
+func (c *AbstractCommand) getMigrationsByVersion(version uint) ([]*MigrationEntity, error) {
+	query := fmt.Sprintf("SELECT * FROM %s WHERE version=%d", migrationTableName, version)
+	rows, err := c.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	migrations := make([]*MigrationEntity, 0)
 	for rows.Next() {
 		me := &MigrationEntity{}
 		if err := rows.Scan(&me.Id, &me.Migration, &me.Version, &me.CreatedAt); err != nil {
@@ -111,28 +151,6 @@ func (c *AbstractCommand) filterMigrations(dbMigrations []*MigrationEntity, file
 	return newFiles
 }
 
-func (c *AbstractCommand) applyMigrationsUp(migrationsFiles []string, version uint) error {
-	for _, file := range migrationsFiles {
-		data, err := ioutil.ReadFile(file)
-		if err != nil {
-			return err
-		}
-		migrationQuery := fmt.Sprintf("INSERT INTO %s (migration, version) VALUES ($1, $2)", migrationTableName)
-		_, err = c.db.Query(migrationQuery, file, version)
-		if err != nil {
-			return err
-		}
-
-		query := string(data)
-		_, err = c.db.Query(query)
-		if err != nil {
-			return err
-		}
-		output.ShowMessage(fmt.Sprintf("migrated: %s", file))
-	}
-	return nil
-}
-
 func (c *AbstractCommand) getLatestVersionNumber() (uint, error) {
 	var versionNumber uint
 	me := &MigrationEntity{}
@@ -150,25 +168,7 @@ func (c *AbstractCommand) getLatestVersionNumber() (uint, error) {
 	return versionNumber, nil
 }
 
-func (c *AbstractCommand) getMigrationsByVersion(version uint) ([]*MigrationEntity, error) {
-	query := fmt.Sprintf("SELECT * FROM %s WHERE version=%d", migrationTableName, version)
-	rows, err := c.db.Query(query)
-	if err != nil {
-		return nil, err
-	}
-	migrations := make([]*MigrationEntity, 0)
-	for rows.Next() {
-		me := &MigrationEntity{}
-		if err := rows.Scan(&me.Id, &me.Migration, &me.Version, &me.CreatedAt); err != nil {
-			return nil, err
-		}
-		migrations = append(migrations, me)
-	}
-
-	return migrations, nil
-}
-
-func (c *AbstractCommand) deleteMigrationById(entity *MigrationEntity) error {
+func (c *AbstractCommand) rollbackMigration(entity *MigrationEntity) error {
 	filePath := strings.Replace(entity.Migration, "-up.sql", "-down.sql", 1)
 	data, err := ioutil.ReadFile(filePath)
 	if err != nil {
@@ -191,10 +191,9 @@ func (c *AbstractCommand) deleteMigrationById(entity *MigrationEntity) error {
 	return nil
 }
 
-//
-//func (c *AbstractCommand) deleteAllMigrations() error {
-//
-//}
+func (c *AbstractCommand) deleteAllMigrations() error {
+	return nil
+}
 
 func (c *AbstractCommand) checkFolder(dir string) error {
 	_, err := os.Stat(dir)

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/malyg1n/sqlx-migrator/output"
+	"github.com/malyg1n/sql-migrator/output"
 	"os"
 	"path"
 	"strings"
@@ -27,7 +27,7 @@ func NewCreateCommand() *CreateCommand {
 // Show help text
 func (c *CreateCommand) Help() string {
 	helpText := `
-Usage: sqlx-migrator create [directory] name
+Usage: sql-migrator create [directory] name
   Create a new a database migration.
 Options:
   directory              The name of the migrations' directory

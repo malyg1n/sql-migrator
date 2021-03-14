@@ -3,7 +3,7 @@ package commands
 import (
 	"database/sql"
 	"flag"
-	"github.com/malyg1n/sqlx-migrator/output"
+	"github.com/malyg1n/sql-migrator/output"
 	"strings"
 )
 
@@ -21,7 +21,7 @@ func NewUpCommand(db *sql.DB) *UpCommand {
 
 func (c *UpCommand) Help() string {
 	helpText := `
-Usage: sqlx-migrator up [directory]
+Usage: sql-migrator up [directory]
   Migrates the database to the most recent version available.
 Options:
   directory			     Directory with migration files (default migrations).
@@ -55,7 +55,7 @@ func (c *UpCommand) Run(args []string) int {
 		return exitStatusError
 	}
 
-	files, err := c.getMigrationUpFiles("migrations")
+	files, err := c.getMigrationUpFiles(migrationDir)
 	if err != nil {
 		output.ShowError(err.Error())
 		return exitStatusError
