@@ -36,12 +36,14 @@ type AbstractCommand struct {
 	db *sql.DB
 }
 
-func (c *AbstractCommand) checkMigrationsTable() (bool, error) {
+func (c *AbstractCommand) checkMigrationsTable() error {
 	row, err := c.db.Query(fmt.Sprintf("SELECT COUNT(id) from %s", migrationTableName))
-	if err != nil {
-		return false, err
+	if err != nil || row == nil {
+		if err := c.createMigrationsTable(); err != nil {
+			return err
+		}
 	}
-	return row != nil, nil
+	return nil
 }
 
 func (c *AbstractCommand) createMigrationsTable() error {
@@ -148,15 +150,56 @@ func (c *AbstractCommand) getLatestVersionNumber() (uint, error) {
 	return versionNumber, nil
 }
 
-//
-//func (c *AbstractCommand) getMigrationsByVersion() []*MigrationEntity {
-//
-//}
-//
-//func (c *AbstractCommand) deleteMigrationsByVersion() error {
-//
-//}
+func (c *AbstractCommand) getMigrationsByVersion(version uint) ([]*MigrationEntity, error) {
+	query := fmt.Sprintf("SELECT * FROM %s WHERE version=%d", migrationTableName, version)
+	rows, err := c.db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	migrations := make([]*MigrationEntity, 0)
+	for rows.Next() {
+		me := &MigrationEntity{}
+		if err := rows.Scan(&me.Id, &me.Migration, &me.Version, &me.CreatedAt); err != nil {
+			return nil, err
+		}
+		migrations = append(migrations, me)
+	}
+
+	return migrations, nil
+}
+
+func (c *AbstractCommand) deleteMigrationById(entity *MigrationEntity) error {
+	filePath := strings.Replace(entity.Migration, "-up.sql", "-down.sql", 1)
+	data, err := ioutil.ReadFile(filePath)
+	if err != nil {
+		return err
+	}
+
+	downQuery := string(data)
+	_, err = c.db.Query(downQuery)
+	if err != nil {
+		return err
+	}
+
+	query := fmt.Sprintf("DELETE FROM %s WHERE id=%d", migrationTableName, entity.Id)
+	_, err = c.db.Query(query)
+	if err != nil {
+		return err
+	}
+
+	output.ShowWarning(fmt.Sprintf("rolled back: %s", entity.Migration))
+	return nil
+}
+
 //
 //func (c *AbstractCommand) deleteAllMigrations() error {
 //
 //}
+
+func (c *AbstractCommand) checkFolder(dir string) error {
+	_, err := os.Stat(dir)
+	if !os.IsNotExist(err) {
+		return nil
+	}
+	return errors.New(fmt.Sprintf(" no such file or directory: %s", dir))
+}

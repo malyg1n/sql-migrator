@@ -6,6 +6,7 @@ require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
 	github.com/fatih/color v1.10.0 // indirect
+	github.com/go-sql-driver/mysql v1.5.0 // indirect
 	github.com/google/uuid v1.2.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
@@ -13,6 +14,7 @@ require (
 	github.com/jmoiron/sqlx v1.3.1 // indirect
 	github.com/joho/godotenv v1.3.0 // indirect
 	github.com/lib/pq v1.10.0 // indirect
+	github.com/mattn/go-sqlite3 v1.14.6 // indirect
 	github.com/mitchellh/cli v1.1.2
 	github.com/mitchellh/copystructure v1.1.1 // indirect
 	github.com/posener/complete v1.2.3 // indirect

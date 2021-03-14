@@ -21,10 +21,10 @@ func NewUpCommand(db *sql.DB) *UpCommand {
 
 func (c *UpCommand) Help() string {
 	helpText := `
-Usage: sql-migrate up [directory]
+Usage: sqlx-migrator up [directory]
   Migrates the database to the most recent version available.
 Options:
-  directory     Directory with migration files (default migrations)
+  directory			     Directory with migration files (default migrations).
 `
 	return strings.TrimSpace(helpText)
 }
@@ -34,15 +34,19 @@ func (c *UpCommand) Synopsis() string {
 }
 
 func (c *UpCommand) Run(args []string) int {
-	flags := flag.NewFlagSet("create", flag.ContinueOnError)
+	flags := flag.NewFlagSet("up", flag.ContinueOnError)
 	flags.Parse(args)
+	if mDir := flags.Arg(0); mDir != "" {
+		migrationDir = mDir
+	}
+	if err := c.checkFolder(migrationDir); err != nil {
+		output.ShowError(err.Error())
+		return exitStatusError
+	}
 
-	check, _ := c.checkMigrationsTable()
-	if !check {
-		if err := c.createMigrationsTable(); err != nil {
-			output.ShowError(err.Error())
-			return exitStatusError
-		}
+	if err := c.checkMigrationsTable(); err != nil {
+		output.ShowError(err.Error())
+		return exitStatusError
 	}
 
 	migrations, err := c.getMigrationsFromBD()
@@ -70,7 +74,7 @@ func (c *UpCommand) Run(args []string) int {
 			return exitStatusError
 		}
 	} else {
-		output.ShowMessage("nothing to migrate")
+		output.ShowInfo("nothing to migrate")
 	}
 
 	return exitStatusSuccess

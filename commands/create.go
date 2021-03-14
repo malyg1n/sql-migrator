@@ -27,7 +27,7 @@ func NewCreateCommand() *CreateCommand {
 // Show help text
 func (c *CreateCommand) Help() string {
 	helpText := `
-Usage: go run migrate.go create [directory] name
+Usage: sqlx-migrator create [directory] name
   Create a new a database migration.
 Options:
   directory              The name of the migrations' directory
