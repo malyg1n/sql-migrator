@@ -12,6 +12,7 @@ require (
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/jmoiron/sqlx v1.3.1 // indirect
 	github.com/joho/godotenv v1.3.0 // indirect
+	github.com/lib/pq v1.10.0 // indirect
 	github.com/mitchellh/cli v1.1.2
 	github.com/mitchellh/copystructure v1.1.1 // indirect
 	github.com/posener/complete v1.2.3 // indirect

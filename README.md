@@ -1,16 +1,16 @@
-#slqx-migrator
+# slqx-migrator
 
-[![Version](https://img.shields.io/badge/version-v0.0.1-green.svg)](https://github.com/malyg1n/sqlx-migrator/releases)
+[![Version](https://img.shields.io/badge/version-v0.0.3-green.svg)](https://github.com/malyg1n/sqlx-migrator/releases)
 
-Golang пакет для создания миграций с использованием [`sqlx`](https://github.com/jmoiron/sqlx).
+Golang пакет для создания миграций с использованием [`database/sql`](https://golang.org/pkg/database/sql) или [`sqlx`](https://github.com/jmoiron/sqlx).
 
 ## Использование
 
-### Установка
+### Установка и настройка
 ```bigquery
 go get -u github.com/malyg1n/sqlx-migrator
 ```
-
+Созадть файл ```.env```, скопировав из ```.env.example``` и указать свои настройки БД
 ### Создание файлов миграций
 В корне проекта необходимо выполнить команду со следующей сигнатурой:
 ```bigquery

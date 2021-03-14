@@ -4,7 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/mitchellh/cli"
+	"github.com/malyg1n/sqlx-migrator/output"
 	"os"
 	"path"
 	"strings"
@@ -16,7 +16,6 @@ type CreateCommand struct {
 }
 
 var (
-	migrationDir  = "migrations"
 	migrationName string
 )
 
@@ -48,12 +47,12 @@ func (c *CreateCommand) Run(args []string) int {
 	flags.Parse(args)
 
 	if err := c.parseFlags(args); err != nil {
-		cli.Ui.Error(&cli.BasicUi{Writer: os.Stdout}, err.Error())
+		output.ShowError(err.Error())
 		return exitStatusError
 	}
 
 	if err := c.createMigration(); err != nil {
-		cli.Ui.Error(&cli.BasicUi{Writer: os.Stdout}, err.Error())
+		output.ShowError(err.Error())
 		return exitStatusError
 	}
 
@@ -69,7 +68,7 @@ func (c *CreateCommand) createMigration() error {
 		return err
 	}
 
-	cli.Ui.Output(&cli.BasicUi{Writer: os.Stdout}, fmt.Sprintf("Created migration %s", pathName))
+	output.ShowMessage(fmt.Sprintf("created migration %s", pathName))
 
 	downFileName := fmt.Sprintf("%s-%s-down.sql", time.Now().Format(timeFormat), strings.TrimSpace(migrationName))
 	pathName = path.Join(migrationDir, downFileName)
@@ -78,7 +77,8 @@ func (c *CreateCommand) createMigration() error {
 	if err != nil {
 		return err
 	}
-	cli.Ui.Output(&cli.BasicUi{Writer: os.Stdout}, fmt.Sprintf("Created migration %s", pathName))
+
+	output.ShowMessage(fmt.Sprintf("created migration %s", pathName))
 
 	defer func() {
 		_ = fUp.Close()

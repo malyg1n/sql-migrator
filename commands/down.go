@@ -1,15 +1,17 @@
 package commands
 
-import "github.com/malyg1n/sqlx-migrator/configs"
+import (
+	"database/sql"
+)
 
 type DownCommand struct {
 	AbstractCommand
 }
 
-func NewDownCommand(cfg *configs.DBConfig) *DownCommand {
+func NewDownCommand(db *sql.DB) *DownCommand {
 	return &DownCommand{
 		AbstractCommand{
-			config: cfg,
+			db: db,
 		},
 	}
 }
