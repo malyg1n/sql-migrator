@@ -49,7 +49,7 @@ func main() {
 
 // Init list of commands
 func InitCommands(service services.ServiceContract) (int, error) {
-	c := cli.NewCLI("migrator", "0.0.3")
+	c := cli.NewCLI("migrator", "0.0.5")
 	c.Args = os.Args[1:]
 	c.Commands = map[string]cli.CommandFactory{
 		"create": func() (cli.Command, error) {
