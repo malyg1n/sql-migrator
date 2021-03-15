@@ -63,13 +63,15 @@ func TestInitDB(t *testing.T) {
 		Cache:  os.Getenv("DB_CACHE"),
 		Mode:   os.Getenv("DB_MODE"),
 	}
-	_, err := InitDB(cfg)
+	db, err := InitDB(cfg)
+	defer db.Close()
 	assert.Nil(t, err)
 }
 
 func TestInitCommands(t *testing.T) {
 	dbCfg := configs.NewDBConfig()
 	db, err := InitDB(dbCfg)
+	defer db.Close()
 
 	assert.Nil(t, err)
 	cfg := configs.NewMainConfig()
