@@ -1,4 +1,4 @@
-# sql-migrator
+# sql-migrator (!Draft work in progress)
 
 [![Version](https://img.shields.io/badge/version-v0.0.3-green.svg)](https://github.com/malyg1n/sql-migrator/releases)
 [![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://github.com/malyg1n/sql-migrator/blob/master/LICENSE.md)
