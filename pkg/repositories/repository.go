@@ -36,15 +36,6 @@ func (repo *Repository) CheckOrCreateMigrationsTable() error {
 	return nil
 }
 
-func (repo *Repository) CreateMigrationsTable() error {
-	sqlQuery := fmt.Sprintf(``, migrationTableName)
-	_, err := repo.db.Query(sqlQuery)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func (repo *Repository) GetMigrations() ([]*entities.MigrationEntity, error) {
 	migrations := make([]*entities.MigrationEntity, 0)
 	query := fmt.Sprintf("SELECT * from %s ORDER BY created_at DESC", migrationTableName)

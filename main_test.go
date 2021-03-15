@@ -3,24 +3,26 @@ package main
 import (
 	"github.com/joho/godotenv"
 	"github.com/malyg1n/sql-migrator/pkg/configs"
+	"github.com/malyg1n/sql-migrator/pkg/repositories"
+	"github.com/malyg1n/sql-migrator/pkg/services"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 )
 
-func TestGetDSN(t *testing.T) {
+func TestMain(m *testing.M) {
 	godotenv.Load(".env.testing")
+	code := m.Run()
+	os.Exit(code)
+}
+
+func TestGetDSN(t *testing.T) {
 	cfg := &configs.DBConfig{
 		Driver: os.Getenv("DB_DRIVER"),
 		File:   os.Getenv("DB_FILE"),
 		Cache:  os.Getenv("DB_CACHE"),
 		Mode:   os.Getenv("DB_MODE"),
 	}
-
-	assert.Equal(t, "sqlite3", cfg.Driver)
-	assert.Equal(t, "test.db", cfg.File)
-	assert.Equal(t, "shared", cfg.Cache)
-	assert.Equal(t, "memory", cfg.Mode)
 
 	testCases := []struct {
 		name   string
@@ -52,4 +54,29 @@ func TestGetDSN(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestInitDB(t *testing.T) {
+	cfg := &configs.DBConfig{
+		Driver: os.Getenv("DB_DRIVER"),
+		File:   os.Getenv("DB_FILE"),
+		Cache:  os.Getenv("DB_CACHE"),
+		Mode:   os.Getenv("DB_MODE"),
+	}
+	_, err := InitDB(cfg)
+	assert.Nil(t, err)
+}
+
+func TestInitCommands(t *testing.T) {
+	dbCfg := configs.NewDBConfig()
+	db, err := InitDB(dbCfg)
+
+	assert.Nil(t, err)
+	cfg := configs.NewMainConfig()
+
+	repo := repositories.NewRepository(db)
+	service := services.NewService(repo, cfg)
+
+	_, err = InitCommands(service)
+	assert.Nil(t, err)
 }
