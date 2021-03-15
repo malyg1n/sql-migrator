@@ -30,7 +30,7 @@ After that, two files will appear in the migrations' folder at the root of the p
 ```
 They need to write SQL code for rolling and rolling back migration, respectively.
 
-See migrations' examples [here](https://github.com/malyg1n/sql-migrator/tree/master/examples)
+See migrations' examples [here](https://github.com/malyg1n/sql-migrator/tree/master/examples).
 ### Migrations
 To roll out migrations, use the command:
 ```bigquery
