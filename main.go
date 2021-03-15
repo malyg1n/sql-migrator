@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"github.com/joho/godotenv"
-	"github.com/malyg1n/sql-migrator/commands"
-	"github.com/malyg1n/sql-migrator/configs"
-	"github.com/malyg1n/sql-migrator/output"
+	"github.com/malyg1n/sql-migrator/pkg/commands"
+	"github.com/malyg1n/sql-migrator/pkg/configs"
+	"github.com/malyg1n/sql-migrator/pkg/output"
+	"github.com/malyg1n/sql-migrator/pkg/repositories"
+	"github.com/malyg1n/sql-migrator/pkg/services"
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -24,14 +26,19 @@ func main() {
 		os.Exit(1)
 	}
 
-	cfg := configs.NewDBConfig()
-	db, err := InitDB(cfg)
+	dbCfg := configs.NewDBConfig()
+	db, err := InitDB(dbCfg)
+
 	if err != nil {
 		output.ShowError(err.Error())
 		os.Exit(1)
 	}
+	cfg := configs.NewMainConfig()
 
-	status, err := InitCommands(db)
+	repo := repositories.NewRepository(db)
+	service := services.NewService(repo, cfg)
+
+	status, err := InitCommands(service)
 	if err != nil {
 		output.ShowError(err.Error())
 		os.Exit(1)
@@ -41,24 +48,24 @@ func main() {
 }
 
 // Init list of commands
-func InitCommands(db *sql.DB) (int, error) {
+func InitCommands(service services.ServiceContract) (int, error) {
 	c := cli.NewCLI("migrator", "0.0.3")
 	c.Args = os.Args[1:]
 	c.Commands = map[string]cli.CommandFactory{
 		"create": func() (cli.Command, error) {
-			return commands.NewCreateCommand(), nil
+			return commands.NewCreateCommand(service), nil
 		},
 		"up": func() (cli.Command, error) {
-			return commands.NewUpCommand(db), nil
+			return commands.NewUpCommand(service), nil
 		},
 		"down": func() (cli.Command, error) {
-			return commands.NewDownCommand(db), nil
+			return commands.NewDownCommand(service), nil
 		},
 		"refresh": func() (cli.Command, error) {
-			return commands.NewRefreshCommand(db), nil
+			return commands.NewRefreshCommand(service), nil
 		},
 		"clean": func() (cli.Command, error) {
-			return commands.NewCleanCommand(db), nil
+			return commands.NewCleanCommand(service), nil
 		},
 	}
 

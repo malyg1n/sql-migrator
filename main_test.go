@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/joho/godotenv"
-	"github.com/malyg1n/sql-migrator/configs"
+	"github.com/malyg1n/sql-migrator/pkg/configs"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
