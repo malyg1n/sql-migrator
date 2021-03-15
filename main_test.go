@@ -17,12 +17,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestGetDSN(t *testing.T) {
-	cfg := &configs.DBConfig{
-		Driver: os.Getenv("DB_DRIVER"),
-		File:   os.Getenv("DB_FILE"),
-		Cache:  os.Getenv("DB_CACHE"),
-		Mode:   os.Getenv("DB_MODE"),
-	}
+	cfg := configs.NewDBConfig()
 
 	testCases := []struct {
 		name   string
@@ -40,7 +35,7 @@ func TestGetDSN(t *testing.T) {
 			name:   "valid driver",
 			driver: "sqlite3",
 			error:  false,
-			answer: "file:test.db?cache=shared&mode=memory",
+			answer: "file:test.db",
 		},
 	}
 
@@ -57,12 +52,7 @@ func TestGetDSN(t *testing.T) {
 }
 
 func TestInitDB(t *testing.T) {
-	cfg := &configs.DBConfig{
-		Driver: os.Getenv("DB_DRIVER"),
-		File:   os.Getenv("DB_FILE"),
-		Cache:  os.Getenv("DB_CACHE"),
-		Mode:   os.Getenv("DB_MODE"),
-	}
+	cfg := configs.NewDBConfig()
 	db, err := InitDB(cfg)
 	defer db.Close()
 	assert.Nil(t, err)

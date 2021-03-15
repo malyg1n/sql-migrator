@@ -113,7 +113,7 @@ func GetDSN(cfg *configs.DBConfig) (string, error) {
 			cfg.Name,
 		)
 	case "sqlite3":
-		dsn = fmt.Sprintf("file:%s?cache=%s&mode=%s", cfg.File, cfg.Cache, cfg.Mode)
+		dsn = fmt.Sprintf("file:%s", cfg.File)
 	default:
 		dsn := os.Getenv("DB_DSN")
 		if dsn == "" {

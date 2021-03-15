@@ -35,8 +35,6 @@ func NewDBConfig() *DBConfig {
 		Password: os.Getenv("DB_PASSWORD"),
 		SSLMode:  os.Getenv("DB_SSL_MODE"),
 		File:     os.Getenv("DB_FILE"),
-		Cache:    os.Getenv("DB_CACHE"),
-		Mode:     os.Getenv("DB_MODE"),
 		DSN:      os.Getenv("DB_DSN"),
 	}
 }

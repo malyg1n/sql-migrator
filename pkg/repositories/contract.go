@@ -9,7 +9,7 @@ const (
 )
 
 type RepositoryContract interface {
-	CheckOrCreateMigrationsTable() error
+	CheckOrCreateMigrationsTable(pathToCreateScript string) error
 	ApplyMigrationsUp(migrationName string, content string, version uint) error
 	GetMigrations() ([]*entities.MigrationEntity, error)
 	GetMigrationsByVersion(version uint) ([]*entities.MigrationEntity, error)
