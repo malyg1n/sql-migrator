@@ -17,7 +17,7 @@ In the same file, specify the folder for migrations (`migrations` in root of pro
 ### Create migration files.
 At the root of the project, you need to run a command with the following signature:
 ```bigquery
-sql-migrator create [migrations-directory] migration-name
+sql-migrator create migration-name
 ```
 Example:
 ```bigquery
