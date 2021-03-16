@@ -38,12 +38,6 @@ func main() {
 	repo := repositories.NewRepository(db)
 	service := services.NewService(repo, cfg)
 
-	err = InitTable(dbCfg, db)
-	if err != nil {
-		output.ShowError(err.Error())
-		os.Exit(1)
-	}
-
 	status, err := InitCommands(service)
 	if err != nil {
 		output.ShowError(err.Error())
@@ -58,6 +52,9 @@ func InitCommands(service services.ServiceContract) (int, error) {
 	c := cli.NewCLI("migrator", "0.0.5")
 	c.Args = os.Args[1:]
 	c.Commands = map[string]cli.CommandFactory{
+		"init": func() (cli.Command, error) {
+			return commands.NewInitCommand(service), nil
+		},
 		"create": func() (cli.Command, error) {
 			return commands.NewCreateCommand(service), nil
 		},

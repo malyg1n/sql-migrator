@@ -14,8 +14,9 @@ import (
 )
 
 type Service struct {
-	repo repositories.RepositoryContract
-	cfg  *configs.MainConfig
+	repo  repositories.RepositoryContract
+	cfg   *configs.MainConfig
+	dbCgf *configs.DBConfig
 }
 
 func NewService(repo repositories.RepositoryContract, cfg *configs.MainConfig) *Service {
