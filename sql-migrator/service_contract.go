@@ -1,6 +1,4 @@
-package services
-
-import "github.com/malyg1n/sql-migrator/pkg/entities"
+package sql_migrator
 
 type ServiceContract interface {
 	Prepare() error
@@ -10,7 +8,7 @@ type ServiceContract interface {
 	ApplyAllMigrationsDown() ([]string, error)
 	RefreshMigrations() ([]string, error)
 	GetMigrationUpFiles(folder string) ([]string, error)
-	FilterMigrations(dbMigrations []*entities.MigrationEntity, files []string) []string
+	FilterMigrations(dbMigrations []*MigrationEntity, files []string) []string
 }
 
 const (

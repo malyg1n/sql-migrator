@@ -2,9 +2,7 @@ package main
 
 import (
 	"github.com/joho/godotenv"
-	"github.com/malyg1n/sql-migrator/pkg/configs"
-	"github.com/malyg1n/sql-migrator/pkg/repositories"
-	"github.com/malyg1n/sql-migrator/pkg/services"
+	"github.com/malyg1n/sql-migrator/sql-migrator"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
@@ -17,7 +15,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestGetDSN(t *testing.T) {
-	cfg := configs.NewDBConfig()
+	cfg := sql_migrator.NewDBConfig()
 
 	testCases := []struct {
 		name   string
@@ -52,22 +50,22 @@ func TestGetDSN(t *testing.T) {
 }
 
 func TestInitDB(t *testing.T) {
-	cfg := configs.NewConfig()
+	cfg := sql_migrator.NewConfig()
 	db, err := InitDB(cfg.DB)
 	defer db.Close()
 	assert.Nil(t, err)
 }
 
 func TestInitCommands(t *testing.T) {
-	dbCfg := configs.NewDBConfig()
+	dbCfg := sql_migrator.NewDBConfig()
 	db, err := InitDB(dbCfg)
 	defer db.Close()
 
 	assert.Nil(t, err)
-	cfg := configs.NewConfig()
+	cfg := sql_migrator.NewConfig()
 
-	repo := repositories.NewRepository(db)
-	service := services.NewService(repo, cfg)
+	repo := sql_migrator.NewRepository(db)
+	service := sql_migrator.NewService(repo, cfg)
 
 	_, err = InitCommands(service)
 	assert.Nil(t, err)

@@ -1,4 +1,4 @@
-package configs
+package sql_migrator
 
 type Config struct {
 	DB   *DBConfig

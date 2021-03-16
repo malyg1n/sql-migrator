@@ -1,22 +1,18 @@
-package tests
+package sql_migrator
 
 import (
 	"database/sql"
 	"github.com/joho/godotenv"
-	"github.com/malyg1n/sql-migrator/pkg/configs"
-	"github.com/malyg1n/sql-migrator/pkg/database"
-	"github.com/malyg1n/sql-migrator/pkg/repositories"
-	"github.com/malyg1n/sql-migrator/pkg/services"
 	_ "github.com/mattn/go-sqlite3"
 	"os"
 	"testing"
 )
 
 var (
-	cfg     *configs.Config
-	repo    repositories.RepositoryContract
-	service services.ServiceContract
-	db      database.DBContract
+	cfg     *Config
+	repo    RepositoryContract
+	service ServiceContract
+	db      DBContract
 )
 
 func TestMain(m *testing.M) {
@@ -30,7 +26,7 @@ func TestMain(m *testing.M) {
 func setUp() {
 	godotenv.Load("../.env.testing")
 	os.Mkdir("../test_migrations", 0777)
-	cfg := configs.NewConfig()
+	cfg := NewConfig()
 	cfg.Main.MigrationsPath = "../test_migrations"
 	cfg.DB.File = "../test.db"
 	cfg.Main.PrepareScriptsPath = ".." + cfg.Main.PrepareScriptsPath
@@ -38,8 +34,8 @@ func setUp() {
 	if err != nil {
 		panic(err)
 	}
-	repo = repositories.NewRepository(db)
-	service = services.NewService(repo, cfg)
+	repo = NewRepository(db)
+	service = NewService(repo, cfg)
 }
 
 // Tear down after tests

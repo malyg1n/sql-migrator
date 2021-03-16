@@ -1,4 +1,4 @@
-package tests
+package sql_migrator
 
 import (
 	_ "github.com/mattn/go-sqlite3"

@@ -1,16 +1,14 @@
-package repositories
+package sql_migrator
 
 import (
 	"fmt"
-	"github.com/malyg1n/sql-migrator/pkg/database"
-	"github.com/malyg1n/sql-migrator/pkg/entities"
 )
 
 type Repository struct {
-	db database.DBContract
+	db DBContract
 }
 
-func NewRepository(db database.DBContract) *Repository {
+func NewRepository(db DBContract) *Repository {
 	return &Repository{
 		db: db,
 	}
@@ -21,15 +19,15 @@ func (repo *Repository) CreateMigrationsTable(query string) error {
 	return err
 }
 
-func (repo *Repository) GetMigrations() ([]*entities.MigrationEntity, error) {
-	migrations := make([]*entities.MigrationEntity, 0)
+func (repo *Repository) GetMigrations() ([]*MigrationEntity, error) {
+	migrations := make([]*MigrationEntity, 0)
 	query := fmt.Sprintf("SELECT * from %s ORDER BY created_at DESC", migrationTableName)
 	rows, err := repo.db.Query(query)
 	if err != nil {
 		return nil, err
 	}
 	for rows.Next() {
-		me := &entities.MigrationEntity{}
+		me := &MigrationEntity{}
 		if err := rows.Scan(&me.Id, &me.Migration, &me.Version, &me.CreatedAt); err != nil {
 			return nil, err
 		}
@@ -39,15 +37,15 @@ func (repo *Repository) GetMigrations() ([]*entities.MigrationEntity, error) {
 	return migrations, nil
 }
 
-func (repo *Repository) GetMigrationsByVersion(version uint) ([]*entities.MigrationEntity, error) {
+func (repo *Repository) GetMigrationsByVersion(version uint) ([]*MigrationEntity, error) {
 	query := fmt.Sprintf("SELECT * FROM %s WHERE version=%d ORDER BY created_at DESC", migrationTableName, version)
 	rows, err := repo.db.Query(query)
 	if err != nil {
 		return nil, err
 	}
-	migrations := make([]*entities.MigrationEntity, 0)
+	migrations := make([]*MigrationEntity, 0)
 	for rows.Next() {
-		me := &entities.MigrationEntity{}
+		me := &MigrationEntity{}
 		if err := rows.Scan(&me.Id, &me.Migration, &me.Version, &me.CreatedAt); err != nil {
 			return nil, err
 		}
@@ -59,7 +57,7 @@ func (repo *Repository) GetMigrationsByVersion(version uint) ([]*entities.Migrat
 
 func (repo *Repository) GetLatestVersionNumber() (uint, error) {
 	var versionNumber uint
-	me := &entities.MigrationEntity{}
+	me := &MigrationEntity{}
 	query := fmt.Sprintf("SELECT * FROM %s ORDER BY version DESC limit 1", migrationTableName)
 	row := repo.db.QueryRow(query)
 	if row == nil {

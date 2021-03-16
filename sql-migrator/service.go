@@ -1,10 +1,7 @@
-package services
+package sql_migrator
 
 import (
 	"fmt"
-	"github.com/malyg1n/sql-migrator/pkg/configs"
-	"github.com/malyg1n/sql-migrator/pkg/entities"
-	"github.com/malyg1n/sql-migrator/pkg/repositories"
 	"io/ioutil"
 	"os"
 	"path"
@@ -14,11 +11,11 @@ import (
 )
 
 type Service struct {
-	repo repositories.RepositoryContract
-	cfg  *configs.Config
+	repo RepositoryContract
+	cfg  *Config
 }
 
-func NewService(repo repositories.RepositoryContract, cfg *configs.Config) *Service {
+func NewService(repo RepositoryContract, cfg *Config) *Service {
 	return &Service{
 		repo: repo,
 		cfg:  cfg,
@@ -206,7 +203,7 @@ func (s *Service) GetMigrationUpFiles(folder string) ([]string, error) {
 	return files, nil
 }
 
-func (s *Service) FilterMigrations(dbMigrations []*entities.MigrationEntity, files []string) []string {
+func (s *Service) FilterMigrations(dbMigrations []*MigrationEntity, files []string) []string {
 	newFiles := make([]string, 0)
 	for _, file := range files {
 		found := false

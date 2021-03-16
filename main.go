@@ -5,12 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/joho/godotenv"
-	"github.com/malyg1n/sql-migrator/pkg/commands"
-	"github.com/malyg1n/sql-migrator/pkg/configs"
-	"github.com/malyg1n/sql-migrator/pkg/database"
-	"github.com/malyg1n/sql-migrator/pkg/output"
-	"github.com/malyg1n/sql-migrator/pkg/repositories"
-	"github.com/malyg1n/sql-migrator/pkg/services"
+	"github.com/malyg1n/sql-migrator/sql-migrator"
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -23,25 +18,25 @@ import (
 func main() {
 	err := godotenv.Load()
 	if err != nil {
-		output.ShowError("error loading environment file")
+		sql_migrator.ShowError("error loading environment file")
 		os.Exit(1)
 	}
 
-	cfg := configs.NewConfig()
+	cfg := sql_migrator.NewConfig()
 	db, err := InitDB(cfg.DB)
 	defer db.Close()
 
 	if err != nil {
-		output.ShowError(err.Error())
+		sql_migrator.ShowError(err.Error())
 		os.Exit(1)
 	}
 
-	repo := repositories.NewRepository(db)
-	service := services.NewService(repo, cfg)
+	repo := sql_migrator.NewRepository(db)
+	service := sql_migrator.NewService(repo, cfg)
 
 	status, err := InitCommands(service)
 	if err != nil {
-		output.ShowError(err.Error())
+		sql_migrator.ShowError(err.Error())
 		os.Exit(1)
 	}
 
@@ -49,27 +44,27 @@ func main() {
 }
 
 // Init list of commands
-func InitCommands(service services.ServiceContract) (int, error) {
+func InitCommands(service sql_migrator.ServiceContract) (int, error) {
 	c := cli.NewCLI("migrator", "0.0.5")
 	c.Args = os.Args[1:]
 	c.Commands = map[string]cli.CommandFactory{
 		"init": func() (cli.Command, error) {
-			return commands.NewInitCommand(service), nil
+			return sql_migrator.NewInitCommand(service), nil
 		},
 		"create": func() (cli.Command, error) {
-			return commands.NewCreateCommand(service), nil
+			return sql_migrator.NewCreateCommand(service), nil
 		},
 		"up": func() (cli.Command, error) {
-			return commands.NewUpCommand(service), nil
+			return sql_migrator.NewUpCommand(service), nil
 		},
 		"down": func() (cli.Command, error) {
-			return commands.NewDownCommand(service), nil
+			return sql_migrator.NewDownCommand(service), nil
 		},
 		"refresh": func() (cli.Command, error) {
-			return commands.NewRefreshCommand(service), nil
+			return sql_migrator.NewRefreshCommand(service), nil
 		},
 		"clean": func() (cli.Command, error) {
-			return commands.NewCleanCommand(service), nil
+			return sql_migrator.NewCleanCommand(service), nil
 		},
 	}
 
@@ -77,7 +72,7 @@ func InitCommands(service services.ServiceContract) (int, error) {
 }
 
 // Init connect to database
-func InitDB(cfg *configs.DBConfig) (database.DBContract, error) {
+func InitDB(cfg *sql_migrator.DBConfig) (sql_migrator.DBContract, error) {
 	dsn, err := GetDSN(cfg)
 	if err != nil {
 		return nil, err
@@ -96,7 +91,7 @@ func InitDB(cfg *configs.DBConfig) (database.DBContract, error) {
 }
 
 // Get dsn string for database connection
-func GetDSN(cfg *configs.DBConfig) (string, error) {
+func GetDSN(cfg *sql_migrator.DBConfig) (string, error) {
 	var dsn string
 	switch cfg.Driver {
 	case "postgres":

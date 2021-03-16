@@ -1,8 +1,6 @@
-package commands
+package sql_migrator
 
 import (
-	"github.com/malyg1n/sql-migrator/pkg/output"
-	"github.com/malyg1n/sql-migrator/pkg/services"
 	"strings"
 )
 
@@ -11,7 +9,7 @@ type InitCommand struct {
 }
 
 // Return command instance
-func NewInitCommand(service services.ServiceContract) *InitCommand {
+func NewInitCommand(service ServiceContract) *InitCommand {
 	return &InitCommand{
 		AbstractCommand{
 			service: service,
@@ -37,10 +35,10 @@ func (c *InitCommand) Synopsis() string {
 func (c *InitCommand) Run(args []string) int {
 	err := c.service.Prepare()
 	if err != nil {
-		output.ShowError(err.Error())
+		ShowError(err.Error())
 		return exitStatusError
 	}
-	output.ShowMessage("migrator was initialized")
+	ShowMessage("migrator was initialized")
 
 	return exitStatusSuccess
 }
