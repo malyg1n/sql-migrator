@@ -52,8 +52,8 @@ func TestGetDSN(t *testing.T) {
 }
 
 func TestInitDB(t *testing.T) {
-	cfg := configs.NewDBConfig()
-	db, err := InitDB(cfg)
+	cfg := configs.NewConfig()
+	db, err := InitDB(cfg.DB)
 	defer db.Close()
 	assert.Nil(t, err)
 }
@@ -64,7 +64,7 @@ func TestInitCommands(t *testing.T) {
 	defer db.Close()
 
 	assert.Nil(t, err)
-	cfg := configs.NewMainConfig()
+	cfg := configs.NewConfig()
 
 	repo := repositories.NewRepository(db)
 	service := services.NewService(repo, cfg)

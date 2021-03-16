@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"github.com/malyg1n/sql-migrator/pkg/output"
 	"github.com/malyg1n/sql-migrator/pkg/services"
 	"strings"
 )
@@ -34,5 +35,12 @@ func (c *InitCommand) Synopsis() string {
 
 // Execute command
 func (c *InitCommand) Run(args []string) int {
+	err := c.service.Prepare()
+	if err != nil {
+		output.ShowError(err.Error())
+		return exitStatusError
+	}
+	output.ShowMessage("migrator was initialized")
+
 	return exitStatusSuccess
 }

@@ -1,44 +1,53 @@
 package tests
 
 import (
-	"database/sql"
-	"github.com/joho/godotenv"
-	"github.com/malyg1n/sql-migrator/pkg/configs"
-	"github.com/malyg1n/sql-migrator/pkg/repositories"
-	"github.com/malyg1n/sql-migrator/pkg/services"
-	"os"
+	_ "github.com/mattn/go-sqlite3"
 )
-
-var (
-	dbCfg                      *configs.DBConfig
-	cfg                        *configs.MainConfig
-	repository                 repositories.RepositoryContract
-	service                    services.ServiceContract
-	db                         *sql.DB
-	sqlScriptForMigrationTable = "../sql_scripts/create-migrations-table.sql"
-)
-
-// Set up before test
-func setUp() {
-	godotenv.Load("../.env.testing")
-	os.Mkdir("../test_migrations", 0777)
-	cfg := configs.NewMainConfig()
-	dbCfg := configs.NewDBConfig()
-	cfg.MigrationsPath = "../test_migrations"
-	dbCfg.File = "../test.db"
-	db, _ = sql.Open(dbCfg.Driver, "file:"+dbCfg.File)
-	repository = repositories.NewRepository(db)
-	service = services.NewService(repository, cfg)
-}
-
-// Tear down after tests
-func tearDown() {
-	os.Remove("../test_migrations")
-	os.Remove("../test.db")
-}
 
 func GetCreateMigrationsTableSql() string {
 	return `
+CREATE TABLE IF NOT EXISTS schema_migrations
+(
+    id integer not null primary key autoincrement,
+    migration varchar(255) not null unique,
+    version int not null,
+    created_at timestamp DEFAULT CURRENT_TIMESTAMP
+);
+`
+}
 
+func GetCreateUsersTableSql() string {
+	return `
+CREATE TABLE IF NOT EXISTS users
+(
+    id integer not null primary key autoincrement,
+    name varchar (255) not null,
+    email  varchar (255) not null unique,
+    created_at timestamp DEFAULT CURRENT_TIMESTAMP
+)
+`
+}
+
+func GetDropUsersTableSql() string {
+	return `
+DROP TABLE IF EXISTS users;
+`
+}
+
+func GetCreateListsTableSql() string {
+	return `
+CREATE TABLE IF NOT EXISTS lists
+(
+    id integer not null primary key autoincrement,
+    label varchar (255) not null,
+    description  varchar (255) not null unique,
+    created_at timestamp DEFAULT CURRENT_TIMESTAMP
+)
+`
+}
+
+func GetDropListsTableSql() string {
+	return `
+DROP TABLE IF EXISTS lists;
 `
 }

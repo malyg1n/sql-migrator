@@ -7,6 +7,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/malyg1n/sql-migrator/pkg/commands"
 	"github.com/malyg1n/sql-migrator/pkg/configs"
+	"github.com/malyg1n/sql-migrator/pkg/database"
 	"github.com/malyg1n/sql-migrator/pkg/output"
 	"github.com/malyg1n/sql-migrator/pkg/repositories"
 	"github.com/malyg1n/sql-migrator/pkg/services"
@@ -26,14 +27,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	dbCfg := configs.NewDBConfig()
-	db, err := InitDB(dbCfg)
+	cfg := configs.NewConfig()
+	db, err := InitDB(cfg.DB)
+	defer db.Close()
 
 	if err != nil {
 		output.ShowError(err.Error())
 		os.Exit(1)
 	}
-	cfg := configs.NewMainConfig()
 
 	repo := repositories.NewRepository(db)
 	service := services.NewService(repo, cfg)
@@ -76,7 +77,7 @@ func InitCommands(service services.ServiceContract) (int, error) {
 }
 
 // Init connect to database
-func InitDB(cfg *configs.DBConfig) (*sql.DB, error) {
+func InitDB(cfg *configs.DBConfig) (database.DBContract, error) {
 	dsn, err := GetDSN(cfg)
 	if err != nil {
 		return nil, err
@@ -126,37 +127,4 @@ func GetDSN(cfg *configs.DBConfig) (string, error) {
 	}
 
 	return dsn, nil
-}
-
-// Initialize migrations table
-func InitTable(cfg *configs.DBConfig, db *sql.DB) error {
-	var sql string
-	switch cfg.Driver {
-	case "postgres":
-		{
-			sql = `
-CREATE TABLE IF NOT EXISTS schema_migrations
-(
-    id bigserial not null primary key,
-    migration varchar(255) not null unique,
-    version int not null,
-    created_at timestamp DEFAULT CURRENT_TIMESTAMP
-);
-`
-		}
-	default:
-		sql = `
-CREATE TABLE IF NOT EXISTS schema_migrations
-(
-    id integer not null primary key auto_increment,
-    migration varchar(255) not null unique,
-    version int not null,
-    created_at timestamp DEFAULT CURRENT_TIMESTAMP
-);
-`
-	}
-
-	_, err := db.Exec(sql)
-
-	return err
 }

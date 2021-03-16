@@ -18,7 +18,7 @@ After that, tou need to run the command:
 ```bigquery
 sql-migrator init
 ```
-This command creates the table to store your migrations.
+This command creates table and directory to store your migrations.
 ### Create migration files.
 At the root of the project, you need to run a command with the following signature:
 ```bigquery

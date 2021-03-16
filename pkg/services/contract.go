@@ -3,7 +3,7 @@ package services
 import "github.com/malyg1n/sql-migrator/pkg/entities"
 
 type ServiceContract interface {
-	BeforeMigration() error
+	Prepare() error
 	CreateMigrationFile(migrationName string) ([]string, error)
 	ApplyMigrationsUp() ([]string, error)
 	ApplyMigrationsDown() ([]string, error)
@@ -11,7 +11,6 @@ type ServiceContract interface {
 	RefreshMigrations() ([]string, error)
 	GetMigrationUpFiles(folder string) ([]string, error)
 	FilterMigrations(dbMigrations []*entities.MigrationEntity, files []string) []string
-	CheckFolder(dir string) error
 }
 
 const (
