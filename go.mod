@@ -15,8 +15,10 @@ require (
 	github.com/joho/godotenv v1.3.0
 	github.com/lib/pq v1.10.0
 	github.com/mattn/go-sqlite3 v1.14.6
+	github.com/mattn/goveralls v0.0.8 // indirect
 	github.com/mitchellh/cli v1.1.2
 	github.com/mitchellh/copystructure v1.1.1 // indirect
+	github.com/modocache/gover v0.0.0-20171022184752-b58185e213c5 // indirect
 	github.com/posener/complete v1.2.3 // indirect
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83 // indirect
