@@ -38,6 +38,12 @@ func main() {
 	repo := repositories.NewRepository(db)
 	service := services.NewService(repo, cfg)
 
+	err = InitTable(dbCfg, db)
+	if err != nil {
+		output.ShowError(err.Error())
+		os.Exit(1)
+	}
+
 	status, err := InitCommands(service)
 	if err != nil {
 		output.ShowError(err.Error())
@@ -123,4 +129,37 @@ func GetDSN(cfg *configs.DBConfig) (string, error) {
 	}
 
 	return dsn, nil
+}
+
+// Initialize migrations table
+func InitTable(cfg *configs.DBConfig, db *sql.DB) error {
+	var sql string
+	switch cfg.Driver {
+	case "postgres":
+		{
+			sql = `
+CREATE TABLE IF NOT EXISTS schema_migrations
+(
+    id bigserial not null primary key,
+    migration varchar(255) not null unique,
+    version int not null,
+    created_at timestamp DEFAULT CURRENT_TIMESTAMP
+);
+`
+		}
+	default:
+		sql = `
+CREATE TABLE IF NOT EXISTS schema_migrations
+(
+    id integer not null primary key auto_increment,
+    migration varchar(255) not null unique,
+    version int not null,
+    created_at timestamp DEFAULT CURRENT_TIMESTAMP
+);
+`
+	}
+
+	_, err := db.Exec(sql)
+
+	return err
 }

@@ -21,13 +21,10 @@ func NewRepository(db *sql.DB) *Repository {
 	}
 }
 
-func (repo *Repository) CheckOrCreateMigrationsTable(pathToCreateScript string) error {
-	if pathToCreateScript == "" {
-		pathToCreateScript = sqlScriptForMigrationTable
-	}
+func (repo *Repository) CheckOrCreateMigrationsTable() error {
 	row, err := repo.db.Query(fmt.Sprintf("SELECT COUNT(id) from %s", migrationTableName))
 	if err != nil || row == nil {
-		data, err := ioutil.ReadFile(pathToCreateScript)
+		data, err := ioutil.ReadFile(sqlScriptForMigrationTable)
 		if err != nil {
 			return err
 		}

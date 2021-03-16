@@ -29,7 +29,7 @@ func (s *Service) BeforeMigration() error {
 	if err := s.CheckFolder(s.cfg.MigrationsPath); err != nil {
 		return err
 	}
-	if err := s.repo.CheckOrCreateMigrationsTable(""); err != nil {
+	if err := s.repo.CheckOrCreateMigrationsTable(); err != nil {
 		return err
 	}
 	return nil
