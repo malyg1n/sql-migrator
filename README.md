@@ -2,6 +2,7 @@
 
 [![Version](https://img.shields.io/badge/version-v0.0.5-green.svg)](https://github.com/malyg1n/sql-migrator/releases)
 [![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://github.com/malyg1n/sql-migrator/blob/master/LICENSE.md)
+[![Coverage Status](https://coveralls.io/repos/github/malyg1n/sql-migrator/badge.svg?branch=write-tests)](https://coveralls.io/github/malyg1n/sql-migrator?branch=write-tests)
 
 Golang utility for managing migrations using [`database/sql`](https://golang.org/pkg/database/sql) or [`sqlx`](https://github.com/jmoiron/sqlx).
 
