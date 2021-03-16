@@ -1,10 +1,7 @@
-package services
+package sql_migrator
 
 import (
 	"fmt"
-	"github.com/malyg1n/sql-migrator/pkg/configs"
-	"github.com/malyg1n/sql-migrator/pkg/entities"
-	"github.com/malyg1n/sql-migrator/pkg/repositories"
 	"io/ioutil"
 	"os"
 	"path"
@@ -14,31 +11,39 @@ import (
 )
 
 type Service struct {
-	repo repositories.RepositoryContract
-	cfg  *configs.MainConfig
+	repo RepositoryContract
+	cfg  *Config
 }
 
-func NewService(repo repositories.RepositoryContract, cfg *configs.MainConfig) *Service {
+func NewService(repo RepositoryContract, cfg *Config) *Service {
 	return &Service{
 		repo: repo,
 		cfg:  cfg,
 	}
 }
 
-func (s *Service) BeforeMigration() error {
-	if err := s.CheckFolder(s.cfg.MigrationsPath); err != nil {
+func (s *Service) Prepare() error {
+	err := s.createFolder()
+	if err != nil {
 		return err
 	}
-	if err := s.repo.CheckOrCreateMigrationsTable(); err != nil {
+
+	data, err := ioutil.ReadFile(s.cfg.Main.PrepareScriptsPath + s.cfg.DB.Driver + ".sql")
+	if err != nil {
 		return err
 	}
-	return nil
+
+	return s.repo.CreateMigrationsTable(string(data))
+}
+
+func (s *Service) createFolder() error {
+	return os.Mkdir(s.cfg.Main.MigrationsPath, 0764)
 }
 
 func (s *Service) CreateMigrationFile(migrationName string) ([]string, error) {
 	var messages []string
 	upFileName := fmt.Sprintf("%s-%s-up.sql", time.Now().Format(timeFormat), strings.TrimSpace(migrationName))
-	pathName := path.Join(s.cfg.MigrationsPath, upFileName)
+	pathName := path.Join(s.cfg.Main.MigrationsPath, upFileName)
 	fUp, err := os.Create(pathName)
 
 	if err != nil {
@@ -48,7 +53,7 @@ func (s *Service) CreateMigrationFile(migrationName string) ([]string, error) {
 	messages = append(messages, fmt.Sprintf("created migration %s", pathName))
 
 	downFileName := fmt.Sprintf("%s-%s-down.sql", time.Now().Format(timeFormat), strings.TrimSpace(migrationName))
-	pathName = path.Join(s.cfg.MigrationsPath, downFileName)
+	pathName = path.Join(s.cfg.Main.MigrationsPath, downFileName)
 	fDown, err := os.Create(pathName)
 
 	if err != nil {
@@ -66,16 +71,12 @@ func (s *Service) CreateMigrationFile(migrationName string) ([]string, error) {
 }
 
 func (s *Service) ApplyMigrationsUp() ([]string, error) {
-	if err := s.BeforeMigration(); err != nil {
-		return nil, err
-	}
-
 	migrations, err := s.repo.GetMigrations()
 	if err != nil {
 		return nil, err
 	}
 
-	files, err := s.GetMigrationUpFiles(s.cfg.MigrationsPath)
+	files, err := s.GetMigrationUpFiles(s.cfg.Main.MigrationsPath)
 	if err != nil {
 		return nil, err
 	}
@@ -110,10 +111,6 @@ func (s *Service) ApplyMigrationsUp() ([]string, error) {
 }
 
 func (s *Service) ApplyMigrationsDown() ([]string, error) {
-	if err := s.BeforeMigration(); err != nil {
-		return nil, err
-	}
-
 	version, err := s.repo.GetLatestVersionNumber()
 	if err != nil {
 		return nil, err
@@ -144,10 +141,6 @@ func (s *Service) ApplyMigrationsDown() ([]string, error) {
 }
 
 func (s *Service) ApplyAllMigrationsDown() ([]string, error) {
-	if err := s.BeforeMigration(); err != nil {
-		return nil, err
-	}
-
 	migrations, err := s.repo.GetMigrations()
 	if err != nil {
 		return nil, err
@@ -210,7 +203,7 @@ func (s *Service) GetMigrationUpFiles(folder string) ([]string, error) {
 	return files, nil
 }
 
-func (s *Service) FilterMigrations(dbMigrations []*entities.MigrationEntity, files []string) []string {
+func (s *Service) FilterMigrations(dbMigrations []*MigrationEntity, files []string) []string {
 	newFiles := make([]string, 0)
 	for _, file := range files {
 		found := false
@@ -225,12 +218,4 @@ func (s *Service) FilterMigrations(dbMigrations []*entities.MigrationEntity, fil
 		}
 	}
 	return newFiles
-}
-
-func (s *Service) CheckFolder(dir string) error {
-	_, err := os.Stat(dir)
-	if !os.IsNotExist(err) {
-		return nil
-	}
-	return fmt.Errorf(fmt.Sprintf("no such file or directory: %s", dir))
 }

@@ -1,9 +1,7 @@
-package commands
+package sql_migrator
 
 import (
 	"fmt"
-	"github.com/malyg1n/sql-migrator/pkg/output"
-	"github.com/malyg1n/sql-migrator/pkg/services"
 	"strings"
 )
 
@@ -11,7 +9,7 @@ type UpCommand struct {
 	AbstractCommand
 }
 
-func NewUpCommand(service services.ServiceContract) *UpCommand {
+func NewUpCommand(service ServiceContract) *UpCommand {
 	return &UpCommand{
 		AbstractCommand{
 			service: service,
@@ -37,15 +35,15 @@ func (c *UpCommand) Run(args []string) int {
 	migrated, err := c.service.ApplyMigrationsUp()
 
 	if err != nil {
-		output.ShowError(err.Error())
+		ShowError(err.Error())
 		return exitStatusError
 	}
 
 	if migrated == nil {
-		output.ShowInfo("nothing to migrate")
+		ShowInfo("nothing to migrate")
 	} else {
 		for _, m := range migrated {
-			output.ShowMessage(fmt.Sprintf("migrated: %s", m))
+			ShowMessage(fmt.Sprintf("migrated: %s", m))
 		}
 	}
 
