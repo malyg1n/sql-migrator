@@ -8,4 +8,5 @@ go:
   - "1.16.x"
 
 script:
-  go test -v ./... -covermode=count -coverprofile=coverage.out $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $GOVERALLS_TOKEN
+  go test -v ./... -covermode=count -coverprofile=coverage.out 
+  $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
