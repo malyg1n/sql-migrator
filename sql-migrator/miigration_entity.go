@@ -1,4 +1,4 @@
-package entities
+package sql_migrator
 
 import "time"
 

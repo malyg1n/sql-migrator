@@ -1,4 +1,4 @@
-package output
+package sql_migrator
 
 import "fmt"
 

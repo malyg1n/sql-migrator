@@ -1,8 +1,6 @@
-package commands
+package sql_migrator
 
 import (
-	"github.com/malyg1n/sql-migrator/pkg/output"
-	"github.com/malyg1n/sql-migrator/pkg/services"
 	"strings"
 )
 
@@ -10,7 +8,7 @@ type RefreshCommand struct {
 	AbstractCommand
 }
 
-func NewRefreshCommand(service services.ServiceContract) *RefreshCommand {
+func NewRefreshCommand(service ServiceContract) *RefreshCommand {
 	return &RefreshCommand{
 		AbstractCommand{
 			service: service,
@@ -35,12 +33,12 @@ func (c *RefreshCommand) Synopsis() string {
 func (c *RefreshCommand) Run(args []string) int {
 	messages, err := c.service.RefreshMigrations()
 	if err != nil {
-		output.ShowError(err.Error())
+		ShowError(err.Error())
 		return exitStatusError
 	}
 
 	for _, m := range messages {
-		output.ShowMessage(m)
+		ShowMessage(m)
 	}
 
 	return exitStatusSuccess

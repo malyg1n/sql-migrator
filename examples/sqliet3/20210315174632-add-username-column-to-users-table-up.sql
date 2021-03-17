@@ -1,0 +1,1 @@
+-- Do nothing, cause sqlite does not allow to drop a column
