@@ -8,6 +8,5 @@ go:
   - "1.16.x"
 
 script:
-  - go test -v ./... -coverprofile=coverage.out
-  - gover
-  - travis_retry $GOPATH/bin/goveralls -coverprofile gover.coverprofile -service travis-ci
+  - go test -v ./... -covermode=count -coverprofile=coverage.out 
+  - travis_retry $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
