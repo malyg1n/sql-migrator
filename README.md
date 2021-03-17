@@ -2,6 +2,7 @@
 
 [![Version](https://img.shields.io/badge/version-v0.0.5-green.svg)](https://github.com/malyg1n/sql-migrator/releases)
 [![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://github.com/malyg1n/sql-migrator/blob/master/LICENSE.md)
+[![Coverage Status](https://coveralls.io/repos/github/malyg1n/sql-migrator/badge.svg?branch=write-tests)](https://coveralls.io/github/malyg1n/sql-migrator?branch=write-tests)
 
 Golang utility for managing migrations using [`database/sql`](https://golang.org/pkg/database/sql) or [`sqlx`](https://github.com/jmoiron/sqlx).
 
@@ -14,6 +15,11 @@ go get -u github.com/malyg1n/sql-migrator
 ```
 Create a file `.env` by copying from `.env.example` and specify your database settings.
 In the same file, specify the folder for migrations (`migrations` in root of project by default). 
+After that, tou need to run the command:
+```bigquery
+sql-migrator init
+```
+This command creates table and directory to store your migrations.
 ### Create migration files.
 At the root of the project, you need to run a command with the following signature:
 ```bigquery
