@@ -7,6 +7,11 @@ before_install:
 go:
   - "1.16.x"
 
+branches:
+  only:
+    - master
+    - stable
+
 script:
-  - go test -v ./... -covermode=count -coverprofile=coverage.out 
+  - go test -v ./... -covermode=count -coverprofile=coverage.out
   - travis_retry $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
