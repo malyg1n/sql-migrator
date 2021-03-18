@@ -1,34 +1,36 @@
-package migrations_store_test
+package store_test
 
 import (
 	"database/sql"
 	"fmt"
 	_ "github.com/lib/pq"
-	"github.com/malyg1n/sql-migrator/internal/entities"
-	"github.com/malyg1n/sql-migrator/internal/migrations_store"
+	"github.com/malyg1n/sql-migrator/internal/entity"
+	"github.com/malyg1n/sql-migrator/internal/store"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/stretchr/testify/assert"
+	"os"
 	"testing"
 )
 
-type store interface {
+type storeContract interface {
+	GetDbDriver() string
 	CreateMigrationsTable(query string) error
-	GetMigrations() ([]*entities.MigrationEntity, error)
-	GetMigrationsByVersion(version uint) ([]*entities.MigrationEntity, error)
+	GetMigrations() ([]*entity.MigrationEntity, error)
+	GetMigrationsByVersion(version uint) ([]*entity.MigrationEntity, error)
 	GetLatestVersionNumber() (uint, error)
-	ApplyMigrationsUp(migrations []*entities.MigrationEntity) error
-	ApplyMigrationsDown(migrations []*entities.MigrationEntity) error
+	ApplyMigrationsUp(migrations []*entity.MigrationEntity) error
+	ApplyMigrationsDown(migrations []*entity.MigrationEntity) error
 }
 
 const (
-	dbDriver         = "postgres"
+	dbDriver         = "sqlite3"
 	dbFilename       = "test_migrations_store.db"
-	connectionString = "host=localhost port=6432 dbname=app user=forge password=secrea sslmode=disable"
+	connectionString = "file:" + dbFilename
 	tableName        = "test_schema_migrations"
 )
 
 var (
-	st store
+	st storeContract
 	db *sql.DB
 )
 
@@ -36,6 +38,10 @@ func TestMain(m *testing.M) {
 	setUp()
 	defer tearDown()
 	m.Run()
+}
+
+func TestMigrationsStore_GetDbDriver(t *testing.T) {
+	assert.Equal(t, dbDriver, st.GetDbDriver())
 }
 
 func TestMigrationsStore_CreateMigrationsTable(t *testing.T) {
@@ -54,31 +60,31 @@ func TestMigrationsStore_ApplyMigrationsUp(t *testing.T) {
 
 	testCases := []struct {
 		name            string
-		migration       *entities.MigrationEntity
+		migration       *entity.MigrationEntity
 		countMigrations int
 		error           string
 	}{
 		{
 			name:            "valid create users",
-			migration:       entities.NewMigrationEntity("create-users", getCreateUsersTableSql(), 1),
+			migration:       entity.NewMigrationEntity("create-users", getCreateUsersTableSql(), 1),
 			countMigrations: 1,
 			error:           "",
 		},
 		{
 			name:            "third create users (table already exists)",
-			migration:       entities.NewMigrationEntity("create-users-new", getCreateUsersTableSql(), 2),
+			migration:       entity.NewMigrationEntity("create-users-new", getCreateUsersTableSql(), 2),
 			countMigrations: 1,
 			error:           "UNIQUE constraint failed: test_schema_migrations.migration",
 		},
 		{
 			name:            "fake query",
-			migration:       entities.NewMigrationEntity("fake-query", "fake-query", 2),
+			migration:       entity.NewMigrationEntity("fake-query", "fake-query", 2),
 			countMigrations: 1,
 			error:           `near "fake": syntax error`,
 		},
 		{
 			name:            "valid create lists",
-			migration:       entities.NewMigrationEntity("create-lists", getCreateListsTableSql(), 2),
+			migration:       entity.NewMigrationEntity("create-lists", getCreateListsTableSql(), 2),
 			countMigrations: 2,
 			error:           "",
 		},
@@ -86,7 +92,7 @@ func TestMigrationsStore_ApplyMigrationsUp(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			var ms []*entities.MigrationEntity
+			var ms []*entity.MigrationEntity
 			ms = append(ms, tc.migration)
 			err := st.ApplyMigrationsUp(ms)
 			if tc.error == "" {
@@ -129,31 +135,31 @@ func TestMigrationsStore_ApplyMigrationsDown(t *testing.T) {
 
 	testCases := []struct {
 		name            string
-		migration       *entities.MigrationEntity
+		migration       *entity.MigrationEntity
 		countMigrations int
 		error           string
 	}{
 		{
 			name:            "valid drop users",
-			migration:       entities.NewMigrationEntity("create-users", getDropUsersTableSql(), 1),
+			migration:       entity.NewMigrationEntity("create-users", getDropUsersTableSql(), 1),
 			countMigrations: 1,
 			error:           "",
 		},
 		{
 			name:            "fake query",
-			migration:       entities.NewMigrationEntity("fake-query", "fake-query", 1),
+			migration:       entity.NewMigrationEntity("fake-query", "fake-query", 1),
 			countMigrations: 1,
 			error:           `near "fake": syntax error`,
 		},
 		{
 			name:            "valid drop lists",
-			migration:       entities.NewMigrationEntity("create-lists", getDropListsTableSql(), 1),
+			migration:       entity.NewMigrationEntity("create-lists", getDropListsTableSql(), 1),
 			countMigrations: 0,
 			error:           "",
 		},
 		{
 			name:            "invalid table name",
-			migration:       entities.NewMigrationEntity("invalid table", "DROP TABLE invalid", 1),
+			migration:       entity.NewMigrationEntity("invalid table", "DROP TABLE invalid", 1),
 			countMigrations: 0,
 			error:           "no such table: invalid",
 		},
@@ -161,7 +167,7 @@ func TestMigrationsStore_ApplyMigrationsDown(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			var ms []*entities.MigrationEntity
+			var ms []*entity.MigrationEntity
 			ms = append(ms, tc.migration)
 			err := st.ApplyMigrationsDown(ms)
 			if tc.error == "" {
@@ -181,19 +187,11 @@ func setUp() {
 	if err != nil {
 		panic(err)
 	}
-	st = migrations_store.NewStore(db, tableName)
+	st = store.NewStore(db, tableName, dbDriver)
 }
 
 func tearDown() {
-	db, _ := sql.Open(dbDriver, connectionString)
-	db.Exec(`drop table test_schema_migrations;
-
-drop table new_users;
-
-drop table lists;
-
-drop table users;
-`)
+	os.Remove(dbFilename)
 }
 
 // Test queries
@@ -201,7 +199,7 @@ func getCreateMigrationsTableSql(tableName string) string {
 	return fmt.Sprintf(`
 CREATE TABLE IF NOT EXISTS %s
 (
-     id bigserial not null primary key,
+	id integer not null primary key autoincrement,
     migration varchar(255) not null unique,
     version int not null,
     created_at timestamp DEFAULT CURRENT_TIMESTAMP
@@ -213,7 +211,7 @@ func getCreateUsersTableSql() string {
 	return `
 CREATE TABLE users
 (
-     id bigserial not null primary key,
+    id integer not null primary key autoincrement,
     name varchar (255) not null,
     email  varchar (255) not null unique,
     created_at timestamp DEFAULT CURRENT_TIMESTAMP
@@ -229,7 +227,7 @@ func getCreateListsTableSql() string {
 	return `
 CREATE TABLE lists
 (
-     id bigserial not null primary key,
+    id integer not null primary key autoincrement,
     label varchar (255) not null,
     description  varchar (255) not null unique,
     created_at timestamp DEFAULT CURRENT_TIMESTAMP

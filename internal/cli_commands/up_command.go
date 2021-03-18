@@ -2,7 +2,7 @@ package cli_commands
 
 import (
 	"fmt"
-	"github.com/malyg1n/sql-migrator/internal"
+	"github.com/malyg1n/sql-migrator/internal/output"
 	"strings"
 )
 
@@ -10,7 +10,7 @@ type UpCommand struct {
 	AbstractCommand
 }
 
-func NewUpCommand(service internal.ServiceContract) *UpCommand {
+func NewUpCommand(service serviceContract) *UpCommand {
 	return &UpCommand{
 		AbstractCommand{
 			service: service,
@@ -34,17 +34,17 @@ func (c *UpCommand) Synopsis() string {
 
 func (c *UpCommand) Run(args []string) int {
 	migrated, err := c.service.ApplyMigrationsUp()
-
+	console := output.NewConsoleOutput()
 	if err != nil {
-		internal.ShowError(err.Error())
+		console.PrintError(err.Error())
 		return exitStatusError
 	}
 
 	if migrated == nil {
-		internal.ShowInfo("nothing to migrate")
+		console.PrintInfo("nothing to migrate")
 	} else {
 		for _, m := range migrated {
-			internal.ShowMessage(fmt.Sprintf("migrated: %s", m))
+			console.PrintSuccess(fmt.Sprintf("migrated: %s", m))
 		}
 	}
 

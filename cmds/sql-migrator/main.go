@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"github.com/joho/godotenv"
 	"github.com/malyg1n/sql-migrator/internal/cli_commands"
-	"github.com/malyg1n/sql-migrator/internal/migration_service"
-	"github.com/malyg1n/sql-migrator/internal/migrations_store"
-	"github.com/malyg1n/sql-migrator/internal/respondents"
+	"github.com/malyg1n/sql-migrator/internal/output"
+	"github.com/malyg1n/sql-migrator/internal/service"
+	"github.com/malyg1n/sql-migrator/internal/store"
 	"os"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -20,7 +20,7 @@ const migrationsTableName = "schema_migrations"
 // main method
 func main() {
 	err := godotenv.Load()
-	console := respondents.NewConsoleRespondent()
+	console := output.NewConsoleOutput()
 	if err != nil {
 		console.PrintError("error loading environment file")
 		os.Exit(1)
@@ -34,8 +34,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	store := migrations_store.NewStore(db, "schema_migrations")
-	service := migration_service.NewService(store, os.Getenv("MIGRATIONS_PATH"))
+	store := store.NewStore(db, "schema_migrations", os.Getenv("DB_DRIVER"))
+	service := service.NewService(store, os.Getenv("MIGRATIONS_PATH"))
 
 	c := cli.NewCLI("migrator", "0.0.5")
 	c.Args = os.Args[1:]

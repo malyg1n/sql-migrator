@@ -1,10 +1,10 @@
-package migrations_store
+package store
 
 import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/malyg1n/sql-migrator/internal/entities"
+	"github.com/malyg1n/sql-migrator/internal/entity"
 )
 
 type dBContract interface {
@@ -20,13 +20,19 @@ type dBContract interface {
 type MigrationsStore struct {
 	db        dBContract
 	tableName string
+	dbDriver  string
 }
 
-func NewStore(db dBContract, tableName string) *MigrationsStore {
+func NewStore(db dBContract, tableName, dbDriver string) *MigrationsStore {
 	return &MigrationsStore{
 		db:        db,
 		tableName: tableName,
+		dbDriver:  dbDriver,
 	}
+}
+
+func (s *MigrationsStore) GetDbDriver() string {
+	return s.dbDriver
 }
 
 func (s *MigrationsStore) CreateMigrationsTable(query string) error {
@@ -34,15 +40,15 @@ func (s *MigrationsStore) CreateMigrationsTable(query string) error {
 	return err
 }
 
-func (s *MigrationsStore) GetMigrations() ([]*entities.MigrationEntity, error) {
-	var migrations []*entities.MigrationEntity
+func (s *MigrationsStore) GetMigrations() ([]*entity.MigrationEntity, error) {
+	var migrations []*entity.MigrationEntity
 	query := fmt.Sprintf("SELECT * from %s ORDER BY created_at DESC", s.tableName)
 	rows, err := s.db.Query(query)
 	if err != nil {
 		return nil, err
 	}
 	for rows.Next() {
-		me := &entities.MigrationEntity{}
+		me := &entity.MigrationEntity{}
 		if err := rows.Scan(&me.Id, &me.Migration, &me.Version, &me.CreatedAt); err != nil {
 			return nil, err
 		}
@@ -52,15 +58,15 @@ func (s *MigrationsStore) GetMigrations() ([]*entities.MigrationEntity, error) {
 	return migrations, nil
 }
 
-func (s *MigrationsStore) GetMigrationsByVersion(version uint) ([]*entities.MigrationEntity, error) {
+func (s *MigrationsStore) GetMigrationsByVersion(version uint) ([]*entity.MigrationEntity, error) {
 	query := fmt.Sprintf("SELECT * FROM %s WHERE version=%d ORDER BY created_at DESC", s.tableName, version)
 	rows, err := s.db.Query(query)
 	if err != nil {
 		return nil, err
 	}
-	var migrations []*entities.MigrationEntity
+	var migrations []*entity.MigrationEntity
 	for rows.Next() {
-		me := &entities.MigrationEntity{}
+		me := &entity.MigrationEntity{}
 		if err := rows.Scan(&me.Id, &me.Migration, &me.Version, &me.CreatedAt); err != nil {
 			return nil, err
 		}
@@ -72,7 +78,7 @@ func (s *MigrationsStore) GetMigrationsByVersion(version uint) ([]*entities.Migr
 
 func (s *MigrationsStore) GetLatestVersionNumber() (uint, error) {
 	var versionNumber uint
-	me := &entities.MigrationEntity{}
+	me := &entity.MigrationEntity{}
 	query := fmt.Sprintf("SELECT * FROM %s ORDER BY version DESC limit 1", s.tableName)
 	row := s.db.QueryRow(query)
 	if row == nil {
@@ -87,7 +93,7 @@ func (s *MigrationsStore) GetLatestVersionNumber() (uint, error) {
 	return versionNumber, nil
 }
 
-func (s *MigrationsStore) ApplyMigrationsUp(migrations []*entities.MigrationEntity) error {
+func (s *MigrationsStore) ApplyMigrationsUp(migrations []*entity.MigrationEntity) error {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err
@@ -116,7 +122,7 @@ func (s *MigrationsStore) ApplyMigrationsUp(migrations []*entities.MigrationEnti
 	return tx.Commit()
 }
 
-func (s *MigrationsStore) ApplyMigrationsDown(migrations []*entities.MigrationEntity) error {
+func (s *MigrationsStore) ApplyMigrationsDown(migrations []*entity.MigrationEntity) error {
 	tx, err := s.db.Begin()
 	if err != nil {
 		return err

@@ -1,7 +1,7 @@
 package cli_commands
 
 import (
-	"github.com/malyg1n/sql-migrator/internal"
+	"github.com/malyg1n/sql-migrator/internal/output"
 	"strings"
 )
 
@@ -10,7 +10,7 @@ type InitCommand struct {
 }
 
 // Return command instance
-func NewInitCommand(service internal.ServiceContract) *InitCommand {
+func NewInitCommand(service serviceContract) *InitCommand {
 	return &InitCommand{
 		AbstractCommand{
 			service: service,
@@ -35,11 +35,12 @@ func (c *InitCommand) Synopsis() string {
 // Execute command
 func (c *InitCommand) Run(args []string) int {
 	err := c.service.Prepare()
+	console := output.NewConsoleOutput()
 	if err != nil {
-		internal.ShowError(err.Error())
+		console.PrintError(err.Error())
 		return exitStatusError
 	}
-	internal.ShowMessage("migrator was initialized")
+	console.PrintSuccess("migrator was initialized")
 
 	return exitStatusSuccess
 }
