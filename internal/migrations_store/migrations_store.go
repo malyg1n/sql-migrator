@@ -88,27 +88,31 @@ func (s *MigrationsStore) GetLatestVersionNumber() (uint, error) {
 }
 
 func (s *MigrationsStore) ApplyMigrationsUp(migrations []*entities.MigrationEntity) error {
-	ctx := context.Background()
-	tx, err := s.db.BeginTx(ctx, nil)
+	tx, err := s.db.Begin()
 	if err != nil {
 		return err
 	}
 	for _, m := range migrations {
-		_, err := s.db.ExecContext(ctx, m.Query)
+		_, err := s.db.Exec(m.Query)
 		if err != nil {
-			tx.Rollback()
+			e := tx.Rollback()
+			if e != nil {
+				return e
+			}
 			return err
 		}
 
 		migrationQuery := fmt.Sprintf("INSERT INTO %s (migration, version) VALUES ($1, $2)", s.tableName)
-		_, err = s.db.ExecContext(ctx, migrationQuery, m.Migration, m.Version)
+		_, err = s.db.Exec(migrationQuery, m.Migration, m.Version)
 		if err != nil {
-			tx.Rollback()
+			e := tx.Rollback()
+			if e != nil {
+				return e
+			}
 			return err
 		}
 	}
 
-	fmt.Println(migrations[0].Migration)
 	return tx.Commit()
 }
 
@@ -120,14 +124,20 @@ func (s *MigrationsStore) ApplyMigrationsDown(migrations []*entities.MigrationEn
 	for _, m := range migrations {
 		_, err := s.db.Exec(m.Query)
 		if err != nil {
-			tx.Rollback()
+			e := tx.Rollback()
+			if e != nil {
+				return e
+			}
 			return err
 		}
 
 		query := fmt.Sprintf("DELETE FROM %s WHERE migration='%s'", s.tableName, m.Migration)
 		_, err = s.db.Exec(query)
 		if err != nil {
-			tx.Rollback()
+			e := tx.Rollback()
+			if e != nil {
+				return e
+			}
 			return err
 		}
 	}
