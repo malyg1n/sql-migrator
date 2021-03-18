@@ -1,7 +1,8 @@
-package sql_migrator
+package cli_commands
 
 import (
 	"fmt"
+	"github.com/malyg1n/sql-migrator/internal"
 	"strings"
 )
 
@@ -9,7 +10,7 @@ type CleanCommand struct {
 	AbstractCommand
 }
 
-func NewCleanCommand(service ServiceContract) *CleanCommand {
+func NewCleanCommand(service internal.ServiceContract) *CleanCommand {
 	return &CleanCommand{
 		AbstractCommand{
 			service: service,
@@ -32,12 +33,12 @@ func (c *CleanCommand) Synopsis() string {
 func (c *CleanCommand) Run(args []string) int {
 	rollerBack, err := c.service.ApplyAllMigrationsDown()
 	if err != nil {
-		ShowError(err.Error())
+		internal.ShowError(err.Error())
 		return exitStatusError
 	}
 
 	for _, rb := range rollerBack {
-		ShowWarning(fmt.Sprintf("rolled back: %s", rb))
+		internal.ShowWarning(fmt.Sprintf("rolled back: %s", rb))
 	}
 
 	return exitStatusSuccess

@@ -1,7 +1,8 @@
-package sql_migrator
+package migration_service
 
 import (
 	"fmt"
+	"github.com/malyg1n/sql-migrator/internal"
 	"io/ioutil"
 	"os"
 	"path"
@@ -11,14 +12,14 @@ import (
 )
 
 type Service struct {
-	repo RepositoryContract
-	cfg  *Config
+	repo           internal.RepositoryContract
+	migrationsPath string
 }
 
-func NewService(repo RepositoryContract, cfg *Config) *Service {
+func NewService(repo internal.RepositoryContract, migrationsPath string) *Service {
 	return &Service{
-		repo: repo,
-		cfg:  cfg,
+		repo:           repo,
+		migrationsPath: migrationsPath,
 	}
 }
 
@@ -42,7 +43,7 @@ func (s *Service) createFolder() error {
 
 func (s *Service) CreateMigrationFile(migrationName string) ([]string, error) {
 	var messages []string
-	upFileName := fmt.Sprintf("%s-%s-up.sql", time.Now().Format(timeFormat), strings.TrimSpace(migrationName))
+	upFileName := fmt.Sprintf("%s-%s-up.sql", time.Now().Format(internal.timeFormat), strings.TrimSpace(migrationName))
 	pathName := path.Join(s.cfg.Main.MigrationsPath, upFileName)
 	fUp, err := os.Create(pathName)
 
@@ -52,7 +53,7 @@ func (s *Service) CreateMigrationFile(migrationName string) ([]string, error) {
 
 	messages = append(messages, fmt.Sprintf("created migration %s", pathName))
 
-	downFileName := fmt.Sprintf("%s-%s-down.sql", time.Now().Format(timeFormat), strings.TrimSpace(migrationName))
+	downFileName := fmt.Sprintf("%s-%s-down.sql", time.Now().Format(internal.timeFormat), strings.TrimSpace(migrationName))
 	pathName = path.Join(s.cfg.Main.MigrationsPath, downFileName)
 	fDown, err := os.Create(pathName)
 

@@ -1,6 +1,7 @@
-package sql_migrator
+package cli_commands
 
 import (
+	"github.com/malyg1n/sql-migrator/internal"
 	"strings"
 )
 
@@ -8,7 +9,7 @@ type RefreshCommand struct {
 	AbstractCommand
 }
 
-func NewRefreshCommand(service ServiceContract) *RefreshCommand {
+func NewRefreshCommand(service internal.ServiceContract) *RefreshCommand {
 	return &RefreshCommand{
 		AbstractCommand{
 			service: service,

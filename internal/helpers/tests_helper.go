@@ -1,19 +1,20 @@
-package sql_migrator
+package helpers
 
 import (
+	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func GetCreateMigrationsTableSql() string {
-	return `
-CREATE TABLE IF NOT EXISTS schema_migrations
+func GetCreateMigrationsTableSql(tableName string) string {
+	return fmt.Sprintf(`
+CREATE TABLE IF NOT EXISTS %s
 (
     id integer not null primary key autoincrement,
     migration varchar(255) not null unique,
     version int not null,
     created_at timestamp DEFAULT CURRENT_TIMESTAMP
 );
-`
+`, tableName)
 }
 
 func GetCreateUsersTableSql() string {

@@ -1,4 +1,6 @@
-package sql_migrator
+package cli_commands
+
+import "github.com/malyg1n/sql-migrator/internal"
 
 const (
 	exitStatusSuccess = 0
@@ -7,5 +9,5 @@ const (
 
 // AbstractCommand
 type AbstractCommand struct {
-	service ServiceContract
+	service internal.ServiceContract
 }

@@ -1,4 +1,4 @@
-package sql_migrator
+package respondents
 
 import "fmt"
 
@@ -10,26 +10,33 @@ const (
 	resetColor   = "\033[0m"
 )
 
+type ConsoleRespondent struct {
+}
+
+func NewConsoleRespondent() *ConsoleRespondent {
+	return &ConsoleRespondent{}
+}
+
 // Show error in red color
-func ShowError(message string) {
+func (r *ConsoleRespondent) PrintError(message string) {
 	fmt.Println(errorColor, message)
 	fmt.Print(resetColor)
 }
 
 // Show success message in green color
-func ShowMessage(message string) {
+func (r *ConsoleRespondent) PrintSuccess(message string) {
 	fmt.Println(successColor, message)
 	fmt.Print(resetColor)
 }
 
 // Show warning message in orange color
-func ShowWarning(message string) {
+func (r *ConsoleRespondent) PrintWarning(message string) {
 	fmt.Println(warningColor, message)
 	fmt.Print(resetColor)
 }
 
 // Show info message in blue color
-func ShowInfo(message string) {
+func (r *ConsoleRespondent) PrintInfo(message string) {
 	fmt.Println(infoColor, message)
 	fmt.Print(resetColor)
 }
