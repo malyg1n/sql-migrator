@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS %s
 
 func GetCreateUsersTableSql() string {
 	return `
-CREATE TABLE IF NOT EXISTS users
+CREATE TABLE users
 (
     id integer not null primary key autoincrement,
     name varchar (255) not null,
@@ -30,14 +30,12 @@ CREATE TABLE IF NOT EXISTS users
 }
 
 func GetDropUsersTableSql() string {
-	return `
-DROP TABLE IF EXISTS users;
-`
+	return `DROP TABLE users;`
 }
 
 func GetCreateListsTableSql() string {
 	return `
-CREATE TABLE IF NOT EXISTS lists
+CREATE TABLE lists
 (
     id integer not null primary key autoincrement,
     label varchar (255) not null,
@@ -48,7 +46,5 @@ CREATE TABLE IF NOT EXISTS lists
 }
 
 func GetDropListsTableSql() string {
-	return `
-DROP TABLE IF EXISTS lists;
-`
+	return `DROP TABLE lists;`
 }

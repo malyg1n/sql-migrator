@@ -1,6 +1,7 @@
 package migrations_store
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"github.com/malyg1n/sql-migrator/internal/entities"
@@ -10,6 +11,9 @@ type dBContract interface {
 	Exec(query string, args ...interface{}) (sql.Result, error)
 	Query(query string, args ...interface{}) (*sql.Rows, error)
 	QueryRow(query string, args ...interface{}) *sql.Row
+	Begin() (*sql.Tx, error)
+	BeginTx(ctx context.Context, opts *sql.TxOptions) (*sql.Tx, error)
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
 	Close() error
 }
 
@@ -83,30 +87,50 @@ func (s *MigrationsStore) GetLatestVersionNumber() (uint, error) {
 	return versionNumber, nil
 }
 
-func (s *MigrationsStore) ApplyMigrationsUp(migrationName string, sqlQuery string, version uint) error {
-	migrationQuery := fmt.Sprintf("INSERT INTO %s (migration, version) VALUES ($1, $2)", s.tableName)
-	_, err := s.db.Exec(migrationQuery, migrationName, version)
+func (s *MigrationsStore) ApplyMigrationsUp(migrations []*entities.MigrationEntity) error {
+	ctx := context.Background()
+	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
-	_, err = s.db.Exec(sqlQuery)
-	if err != nil {
-		return err
+	for _, m := range migrations {
+		_, err := s.db.ExecContext(ctx, m.Query)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+
+		migrationQuery := fmt.Sprintf("INSERT INTO %s (migration, version) VALUES ($1, $2)", s.tableName)
+		_, err = s.db.ExecContext(ctx, migrationQuery, m.Migration, m.Version)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
 	}
-	return nil
+
+	fmt.Println(migrations[0].Migration)
+	return tx.Commit()
 }
 
-func (s *MigrationsStore) ApplyMigrationsDown(migrationId uint, sqlQuery string) error {
-	_, err := s.db.Exec(sqlQuery)
+func (s *MigrationsStore) ApplyMigrationsDown(migrations []*entities.MigrationEntity) error {
+	tx, err := s.db.Begin()
 	if err != nil {
 		return err
 	}
+	for _, m := range migrations {
+		_, err := s.db.Exec(m.Query)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
 
-	query := fmt.Sprintf("DELETE FROM %s WHERE id=%d", s.tableName, migrationId)
-	_, err = s.db.Exec(query)
-	if err != nil {
-		return err
+		query := fmt.Sprintf("DELETE FROM %s WHERE migration='%s'", s.tableName, m.Migration)
+		_, err = s.db.Exec(query)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
 	}
 
-	return nil
+	return tx.Commit()
 }
