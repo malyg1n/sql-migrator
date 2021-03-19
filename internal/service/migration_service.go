@@ -27,7 +27,7 @@ type Service struct {
 }
 
 const (
-	prepareScriptsPath = "prepare"
+	prepareScriptsPath = "../../prepare"
 	timeFormat         = "20060102150405"
 )
 
