@@ -32,7 +32,8 @@ const (
 )
 
 var (
-	srv *service.Service
+	srv        *service.Service
+	migrations []*entity.MigrationEntity
 )
 
 func (store *migrationStoreStub) GetDbDriver() string {
@@ -44,22 +45,45 @@ func (store *migrationStoreStub) CreateMigrationsTable(query string) error {
 }
 
 func (store *migrationStoreStub) GetMigrations() ([]*entity.MigrationEntity, error) {
-	return nil, nil
+	return migrations, nil
 }
 
 func (store *migrationStoreStub) GetMigrationsByVersion(version uint) ([]*entity.MigrationEntity, error) {
-	return nil, nil
+	var migrationsByVersion []*entity.MigrationEntity
+	for _, m := range migrations {
+		if m.Version == version {
+			migrationsByVersion = append(migrationsByVersion, m)
+		}
+	}
+
+	return migrationsByVersion, nil
 }
 
 func (store *migrationStoreStub) GetLatestVersionNumber() (uint, error) {
-	return 0, nil
+	var version uint
+	for _, m := range migrations {
+		if m.Version > version {
+			version = m.Version
+		}
+	}
+
+	return version, nil
 }
 
 func (store *migrationStoreStub) ApplyMigrationsUp(migrations []*entity.MigrationEntity) error {
+	var newMigrations []*entity.MigrationEntity
+	for _, m := range migrations {
+		newMigrations = append(newMigrations, m)
+	}
+
 	return nil
 }
 
 func (store *migrationStoreStub) ApplyMigrationsDown(migrations []*entity.MigrationEntity) error {
+	for _, m := range migrations {
+
+	}
+
 	return nil
 }
 
@@ -81,6 +105,10 @@ func TestService_CreateFolder(t *testing.T) {
 func TestService_Prepare(t *testing.T) {
 	err := srv.Prepare()
 	assert.Nil(t, err)
+}
+
+func TestService_ApplyMigrationsUp(t *testing.T) {
+
 }
 
 func setUp() {
