@@ -9,6 +9,8 @@ import (
 	"github.com/malyg1n/sql-migrator/internal/service"
 	"github.com/malyg1n/sql-migrator/internal/store"
 	"os"
+	"os/signal"
+	"syscall"
 
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
@@ -20,6 +22,13 @@ const migrationsTableName = "schema_migrations"
 
 // main method
 func main() {
+	ch := make(chan os.Signal)
+	signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		<-ch
+		os.Exit(0)
+	}()
+
 	err := godotenv.Load()
 	console := output.NewConsoleOutput()
 	if err != nil {
@@ -40,9 +49,9 @@ func main() {
 	store := store.NewStore(db, "schema_migrations")
 	service := service.NewService(store, cfg)
 
-	c := cli.NewCLI("migrator", "0.0.5")
-	c.Args = os.Args[1:]
-	c.Commands = map[string]cli.CommandFactory{
+	newCLI := cli.NewCLI("migrator", "0.0.5")
+	newCLI.Args = os.Args[1:]
+	newCLI.Commands = map[string]cli.CommandFactory{
 		"init": func() (cli.Command, error) {
 			return cli_commands.NewInitCommand(service), nil
 		},
@@ -63,7 +72,7 @@ func main() {
 		},
 	}
 
-	status, err := c.Run()
+	status, err := newCLI.Run()
 	if err != nil {
 		console.PrintError(err.Error())
 		os.Exit(1)
