@@ -1,4 +1,4 @@
-package cli_commands
+package commands
 
 import (
 	"fmt"
@@ -6,10 +6,12 @@ import (
 	"strings"
 )
 
+// UpCommand is command for roll out migrations
 type UpCommand struct {
 	AbstractCommand
 }
 
+// NewUpCommand returns command instance
 func NewUpCommand(service serviceContract) *UpCommand {
 	return &UpCommand{
 		AbstractCommand{
@@ -18,6 +20,7 @@ func NewUpCommand(service serviceContract) *UpCommand {
 	}
 }
 
+// Help method displays info about command
 func (c *UpCommand) Help() string {
 	helpText := `
 Usage: sql-migrator up [directory]
@@ -28,10 +31,12 @@ Options:
 	return strings.TrimSpace(helpText)
 }
 
+// Synopsis method show short description about command
 func (c *UpCommand) Synopsis() string {
 	return "Migrates the database to the most recent version available."
 }
 
+// Run method executes the command
 func (c *UpCommand) Run(args []string) int {
 	migrated, err := c.service.ApplyMigrationsUp()
 	console := output.NewConsoleOutput()

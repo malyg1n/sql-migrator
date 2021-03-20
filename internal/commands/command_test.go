@@ -1,7 +1,7 @@
-package cli_commands_test
+package commands_test
 
 import (
-	"github.com/malyg1n/sql-migrator/internal/cli_commands"
+	"github.com/malyg1n/sql-migrator/internal/commands"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -13,7 +13,7 @@ func (s *serviceStub) Prepare() error {
 	return nil
 }
 
-func (s *serviceStub) CreateMigrationFile(migrationName string) ([]string, error) {
+func (s *serviceStub) CreateMigrationFiles(migrationName string) ([]string, error) {
 	return nil, nil
 }
 
@@ -34,29 +34,29 @@ func (s *serviceStub) RefreshMigrations() ([]string, error) {
 }
 
 func TestInitCommand_Run(t *testing.T) {
-	cmd := cli_commands.NewInitCommand(&serviceStub{})
+	cmd := commands.NewInitCommand(&serviceStub{})
 	assert.Equal(t, 0, cmd.Run([]string{}))
 }
 
 func TestCreateCommand_Run(t *testing.T) {
-	cmd := cli_commands.NewCreateCommand(&serviceStub{})
+	cmd := commands.NewCreateCommand(&serviceStub{})
 	assert.Equal(t, 1, cmd.Run([]string{}))
 
-	cmd = cli_commands.NewCreateCommand(&serviceStub{})
+	cmd = commands.NewCreateCommand(&serviceStub{})
 	assert.Equal(t, 0, cmd.Run([]string{"test"}))
 }
 
 func TestDownCommand_Run(t *testing.T) {
-	cmd := cli_commands.NewDownCommand(&serviceStub{})
+	cmd := commands.NewDownCommand(&serviceStub{})
 	assert.Equal(t, 0, cmd.Run([]string{}))
 }
 
 func TestNewRefreshCommand(t *testing.T) {
-	cmd := cli_commands.NewRefreshCommand(&serviceStub{})
+	cmd := commands.NewRefreshCommand(&serviceStub{})
 	assert.Equal(t, 0, cmd.Run([]string{}))
 }
 
 func TestNewCleanCommand(t *testing.T) {
-	cmd := cli_commands.NewCleanCommand(&serviceStub{})
+	cmd := commands.NewCleanCommand(&serviceStub{})
 	assert.Equal(t, 0, cmd.Run([]string{}))
 }

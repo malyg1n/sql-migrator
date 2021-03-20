@@ -1,4 +1,4 @@
-package cli_commands
+package commands
 
 import (
 	"flag"
@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-// Command for create migrations files
+// CreateCommand is command for create migrations files
 type CreateCommand struct {
 	AbstractCommand
 }
@@ -16,7 +16,7 @@ var (
 	migrationName string
 )
 
-// Return command instance
+// NewCreateCommand returns command instance
 func NewCreateCommand(service serviceContract) *CreateCommand {
 	return &CreateCommand{
 		AbstractCommand{
@@ -25,7 +25,7 @@ func NewCreateCommand(service serviceContract) *CreateCommand {
 	}
 }
 
-// Show help text
+// Help method displays info about command
 func (c *CreateCommand) Help() string {
 	helpText := `
 Usage: sql-migrator create [directory] name
@@ -37,12 +37,12 @@ Options:
 	return strings.TrimSpace(helpText)
 }
 
-// Show info about command
+// Synopsis method show short description about command
 func (c *CreateCommand) Synopsis() string {
 	return "Create a new migration."
 }
 
-// Execute command
+// Run method executes the command
 func (c *CreateCommand) Run(args []string) int {
 	flags := flag.NewFlagSet("create", flag.ContinueOnError)
 	err := flags.Parse(args)
@@ -58,7 +58,7 @@ func (c *CreateCommand) Run(args []string) int {
 		return exitStatusError
 	}
 
-	files, err := c.service.CreateMigrationFile(migrationName)
+	files, err := c.service.CreateMigrationFiles(migrationName)
 
 	if err != nil {
 		console.PrintError(err.Error())

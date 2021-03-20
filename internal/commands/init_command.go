@@ -1,15 +1,16 @@
-package cli_commands
+package commands
 
 import (
 	"github.com/malyg1n/sql-migrator/internal/output"
 	"strings"
 )
 
+// InitCommand is command for initialize utility (create folder and table for migrations)
 type InitCommand struct {
 	AbstractCommand
 }
 
-// Return command instance
+// NewInitCommand returns command instance
 func NewInitCommand(service serviceContract) *InitCommand {
 	return &InitCommand{
 		AbstractCommand{
@@ -18,7 +19,7 @@ func NewInitCommand(service serviceContract) *InitCommand {
 	}
 }
 
-// Show help text
+// Help method displays info about command
 func (c *InitCommand) Help() string {
 	helpText := `
 Usage: sql-migrator init
@@ -27,12 +28,12 @@ Usage: sql-migrator init
 	return strings.TrimSpace(helpText)
 }
 
-// Show info about command
+// Synopsis method show short description about command
 func (c *InitCommand) Synopsis() string {
 	return "Init a table for store your migrations."
 }
 
-// Execute command
+// Run method executes the command
 func (c *InitCommand) Run(args []string) int {
 	err := c.service.Prepare()
 	console := output.NewConsoleOutput()

@@ -15,7 +15,7 @@ import (
 
 type serviceContract interface {
 	Prepare() error
-	CreateMigrationFile(migrationName string) ([]string, error)
+	CreateMigrationFiles(migrationName string) ([]string, error)
 	ApplyMigrationsUp() ([]string, error)
 	ApplyMigrationsDown() ([]string, error)
 	ApplyAllMigrationsDown() ([]string, error)
@@ -125,9 +125,9 @@ func TestService_Prepare(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestService_CreateMigrationFile(t *testing.T) {
+func TestService_CreateMigrationFiles(t *testing.T) {
 	testMigrationName := "test-migration"
-	messages, err := srv.CreateMigrationFile(testMigrationName)
+	messages, err := srv.CreateMigrationFiles(testMigrationName)
 	pathNameUp := path.Join(migrationFolder, fmt.Sprintf("%s-%s-up.sql", "00001", testMigrationName))
 	pathNameDown := path.Join(migrationFolder, fmt.Sprintf("%s-%s-down.sql", "00001", testMigrationName))
 	assert.Nil(t, err)

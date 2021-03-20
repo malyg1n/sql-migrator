@@ -20,11 +20,13 @@ type storeContract interface {
 	ApplyMigrationsDown(migrations []*entity.MigrationEntity) error
 }
 
+// Service for works with migrations
 type Service struct {
 	repo storeContract
 	cfg  *config.Config
 }
 
+// NewService returns the new instance
 func NewService(repo storeContract, cfg *config.Config) *Service {
 	return &Service{
 		repo: repo,
@@ -32,16 +34,18 @@ func NewService(repo storeContract, cfg *config.Config) *Service {
 	}
 }
 
+// Prepare application
 func (s *Service) Prepare() error {
 	err := s.createFolder()
 	if err != nil {
 		return err
 	}
 
-	return s.repo.CreateMigrationsTable(s.getPrepareSqlRequestByDriver())
+	return s.repo.CreateMigrationsTable(s.getPrepareSQLRequestByDriver())
 }
 
-func (s *Service) CreateMigrationFile(migrationName string) ([]string, error) {
+// CreateMigrationFiles creates new migration files for up and down
+func (s *Service) CreateMigrationFiles(migrationName string) ([]string, error) {
 	var messages []string
 	files, err := os.ReadDir(s.cfg.MigrationsPath)
 	if err != nil {
@@ -76,6 +80,7 @@ func (s *Service) CreateMigrationFile(migrationName string) ([]string, error) {
 	return messages, nil
 }
 
+// ApplyMigrationsUp rolls out migrations
 func (s *Service) ApplyMigrationsUp() ([]string, error) {
 	migrations, err := s.repo.GetMigrations()
 	if err != nil {
@@ -99,7 +104,6 @@ func (s *Service) ApplyMigrationsUp() ([]string, error) {
 
 	// increase version number
 	version++
-
 	var migrated []string
 	var newMigrations []*entity.MigrationEntity
 
@@ -119,6 +123,7 @@ func (s *Service) ApplyMigrationsUp() ([]string, error) {
 	return migrated, nil
 }
 
+// ApplyMigrationsDown roll back latest migrations
 func (s *Service) ApplyMigrationsDown() ([]string, error) {
 	version, err := s.repo.GetLatestVersionNumber()
 	if err != nil {
@@ -152,6 +157,7 @@ func (s *Service) ApplyMigrationsDown() ([]string, error) {
 	return rollback, err
 }
 
+// ApplyAllMigrationsDown roll back all migrations
 func (s *Service) ApplyAllMigrationsDown() ([]string, error) {
 	migrations, err := s.repo.GetMigrations()
 	if err != nil {
@@ -180,6 +186,7 @@ func (s *Service) ApplyAllMigrationsDown() ([]string, error) {
 	return rollback, err
 }
 
+// RefreshMigrations cleans of all migrations and roll out them over again
 func (s *Service) RefreshMigrations() ([]string, error) {
 	var messages []string
 	rolledBack, err := s.ApplyAllMigrationsDown()
@@ -230,7 +237,7 @@ func (s *Service) filterMigrations(dbMigrations []*entity.MigrationEntity, files
 	return newFiles
 }
 
-func (s *Service) getPrepareSqlRequestByDriver() string {
+func (s *Service) getPrepareSQLRequestByDriver() string {
 	switch s.cfg.DbDriver {
 	case "postgres":
 		return `CREATE TABLE IF NOT EXISTS schema_migrations (id bigserial not null primary key, migration varchar(255) not null unique, version int not null, created_at timestamp DEFAULT CURRENT_TIMESTAMP);`

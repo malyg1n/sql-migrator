@@ -1,4 +1,4 @@
-package cli_commands
+package commands
 
 const (
 	exitStatusSuccess = 0
@@ -7,14 +7,14 @@ const (
 
 type serviceContract interface {
 	Prepare() error
-	CreateMigrationFile(migrationName string) ([]string, error)
+	CreateMigrationFiles(migrationName string) ([]string, error)
 	ApplyMigrationsUp() ([]string, error)
 	ApplyMigrationsDown() ([]string, error)
 	ApplyAllMigrationsDown() ([]string, error)
 	RefreshMigrations() ([]string, error)
 }
 
-// AbstractCommand
+// AbstractCommand is parent command for other commands
 type AbstractCommand struct {
 	service serviceContract
 }

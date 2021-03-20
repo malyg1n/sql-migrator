@@ -1,4 +1,4 @@
-package cli_commands
+package commands
 
 import (
 	"fmt"
@@ -6,10 +6,12 @@ import (
 	"strings"
 )
 
+// CleanCommand is command for clean database
 type CleanCommand struct {
 	AbstractCommand
 }
 
+// NewCleanCommand returns command instance
 func NewCleanCommand(service serviceContract) *CleanCommand {
 	return &CleanCommand{
 		AbstractCommand{
@@ -18,6 +20,7 @@ func NewCleanCommand(service serviceContract) *CleanCommand {
 	}
 }
 
+// Help method displays info about command
 func (c *CleanCommand) Help() string {
 	helpText := `
 Usage: sql-migrator clean
@@ -26,10 +29,12 @@ Usage: sql-migrator clean
 	return strings.TrimSpace(helpText)
 }
 
+// Synopsis method show short description about command
 func (c *CleanCommand) Synopsis() string {
 	return "Down all migrations."
 }
 
+// Run method executes the command
 func (c *CleanCommand) Run(args []string) int {
 	rollerBack, err := c.service.ApplyAllMigrationsDown()
 	console := output.NewConsoleOutput()
