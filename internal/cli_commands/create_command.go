@@ -45,10 +45,14 @@ func (c *CreateCommand) Synopsis() string {
 // Execute command
 func (c *CreateCommand) Run(args []string) int {
 	flags := flag.NewFlagSet("create", flag.ContinueOnError)
-	flags.Parse(args)
-	migrationName = flags.Arg(0)
+	err := flags.Parse(args)
 	console := output.NewConsoleOutput()
+	if err != nil {
+		console.PrintError(err.Error())
+		return exitStatusError
+	}
 
+	migrationName = flags.Arg(0)
 	if migrationName == "" {
 		console.PrintError("empty migration name")
 		return exitStatusError

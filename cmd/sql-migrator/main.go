@@ -39,14 +39,20 @@ func main() {
 	cfg := config.NewConfig()
 
 	db, err := sql.Open(cfg.DbDriver, cfg.DbConnectionsString)
-	defer db.Close()
+	defer func() {
+		err := db.Close()
+		if err != nil {
+			console.PrintError("db wasn't closed correctly")
+			os.Exit(1)
+		}
+	}()
 
 	if err != nil {
 		console.PrintError(err.Error())
 		os.Exit(1)
 	}
 
-	store := store.NewStore(db, "schema_migrations")
+	store := store.NewStore(db, migrationsTableName)
 	service := service.NewService(store, cfg)
 
 	newCLI := cli.NewCLI("migrator", "0.0.5")

@@ -9,7 +9,6 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-	"time"
 )
 
 type storeContract interface {
@@ -26,11 +25,6 @@ type Service struct {
 	cfg  *config.Config
 }
 
-const (
-	prepareScriptsPath = "../../prepare/"
-	timeFormat         = "20060102150405"
-)
-
 func NewService(repo storeContract, cfg *config.Config) *Service {
 	return &Service{
 		repo: repo,
@@ -44,7 +38,7 @@ func (s *Service) Prepare() error {
 		return err
 	}
 
-	data, err := ioutil.ReadFile(prepareScriptsPath + s.cfg.DbDriver + ".sql")
+	data, err := ioutil.ReadFile(path.Join(s.cfg.PrepareScriptsPath, s.cfg.DbDriver+".sql"))
 	if err != nil {
 		return err
 	}
@@ -54,7 +48,12 @@ func (s *Service) Prepare() error {
 
 func (s *Service) CreateMigrationFile(migrationName string) ([]string, error) {
 	var messages []string
-	upFileName := fmt.Sprintf("%s-%s-up.sql", time.Now().Format(timeFormat), strings.TrimSpace(migrationName))
+	files, err := os.ReadDir(s.cfg.MigrationsPath)
+	if err != nil {
+		return nil, err
+	}
+
+	upFileName := fmt.Sprintf("%s-%s-up.sql", fmt.Sprintf("%05d", (len(files)/2)+1), strings.TrimSpace(migrationName))
 	pathName := path.Join(s.cfg.MigrationsPath, upFileName)
 	fUp, err := os.Create(pathName)
 
@@ -64,7 +63,7 @@ func (s *Service) CreateMigrationFile(migrationName string) ([]string, error) {
 
 	messages = append(messages, fmt.Sprintf("created migration %s", pathName))
 
-	downFileName := fmt.Sprintf("%s-%s-down.sql", time.Now().Format(timeFormat), strings.TrimSpace(migrationName))
+	downFileName := fmt.Sprintf("%s-%s-down.sql", fmt.Sprintf("%05d", (len(files)/2)+1), strings.TrimSpace(migrationName))
 	pathName = path.Join(s.cfg.MigrationsPath, downFileName)
 	fDown, err := os.Create(pathName)
 
@@ -198,13 +197,8 @@ func (s *Service) RefreshMigrations() ([]string, error) {
 		return nil, err
 	}
 
-	for _, rb := range rolledBack {
-		messages = append(messages, rb)
-	}
-
-	for _, m := range migrated {
-		messages = append(messages, m)
-	}
+	messages = append(messages, rolledBack...)
+	messages = append(messages, migrated...)
 
 	return messages, err
 }
@@ -234,7 +228,7 @@ func (s *Service) filterMigrations(dbMigrations []*entity.MigrationEntity, files
 				break
 			}
 		}
-		if found == false {
+		if !found {
 			newFiles = append(newFiles, file)
 		}
 	}

@@ -11,7 +11,6 @@ import (
 	"sort"
 	"sync"
 	"testing"
-	"time"
 )
 
 type serviceContract interface {
@@ -32,9 +31,8 @@ type migrationStoreStub struct {
 
 const (
 	migrationFolder     = "test_migration_folder"
-	timeFormat          = "20060102150405"
-	firstMigrationName  = "0001-first"
-	secondMigrationName = "0002-second"
+	firstMigrationName  = "000001-first"
+	secondMigrationName = "000002-second"
 )
 
 var (
@@ -117,8 +115,9 @@ func (store *migrationStoreStub) ApplyMigrationsDown(migrations []*entity.Migrat
 
 func TestMain(m *testing.M) {
 	setUp()
-	defer tearDown()
-	m.Run()
+	code := m.Run()
+	tearDown()
+	os.Exit(code)
 }
 
 func TestService_Prepare(t *testing.T) {
@@ -129,8 +128,8 @@ func TestService_Prepare(t *testing.T) {
 func TestService_CreateMigrationFile(t *testing.T) {
 	testMigrationName := "test-migration"
 	messages, err := srv.CreateMigrationFile(testMigrationName)
-	pathNameUp := path.Join(migrationFolder, fmt.Sprintf("%s-%s-up.sql", time.Now().Format(timeFormat), testMigrationName))
-	pathNameDown := path.Join(migrationFolder, fmt.Sprintf("%s-%s-down.sql", time.Now().Format(timeFormat), testMigrationName))
+	pathNameUp := path.Join(migrationFolder, fmt.Sprintf("%s-%s-up.sql", "00001", testMigrationName))
+	pathNameDown := path.Join(migrationFolder, fmt.Sprintf("%s-%s-down.sql", "00001", testMigrationName))
 	assert.Nil(t, err)
 	assert.FileExists(t, pathNameUp)
 	assert.Len(t, messages, 2)
@@ -178,8 +177,8 @@ func TestService_ApplyMigrationsUp(t *testing.T) {
 				assert.Nil(t, err)
 				assert.Nil(t, messages)
 			} else {
-				createMigrationFiles(tc.migrationUp)
-				createMigrationFiles(tc.migrationDown)
+				createMigrationFiles(t, tc.migrationUp)
+				createMigrationFiles(t, tc.migrationDown)
 				messages, err := srv.ApplyMigrationsUp()
 				assert.Equal(t, tc.message, messages[0])
 				assert.Nil(t, err)
@@ -205,7 +204,10 @@ func TestService_RefreshMigrations(t *testing.T) {
 	assert.Equal(t, "migrated: "+path.Join(migrationFolder, firstMigrationName+"-up.sql"), messages[0])
 	assert.Equal(t, "migrated: "+path.Join(migrationFolder, secondMigrationName+"-up.sql"), messages[1])
 
-	srv.ApplyMigrationsUp()
+	_, err = srv.ApplyMigrationsUp()
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	messages, err = srv.RefreshMigrations()
 	assert.Nil(t, err)
@@ -229,6 +231,7 @@ func setUp() {
 	cfg := config.NewConfig()
 	cfg.DbDriver = "sqlite3"
 	cfg.MigrationsPath = "test_migration_folder"
+	cfg.PrepareScriptsPath = "../../prepare/"
 	repo := &migrationStoreStub{
 		tableName:      "test_schema_migrations_service",
 		fakeMigrations: make(map[string]*entity.MigrationEntity),
@@ -240,6 +243,9 @@ func tearDown() {
 	os.RemoveAll(migrationFolder)
 }
 
-func createMigrationFiles(filename string) {
-	os.Create(filename)
+func createMigrationFiles(t *testing.T, filename string) {
+	_, err := os.Create(filename)
+	if err != nil {
+		t.Fatalf("can't create test_migration_folder with error: %s", err)
+	}
 }

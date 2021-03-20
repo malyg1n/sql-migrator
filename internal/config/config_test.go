@@ -8,7 +8,10 @@ import (
 )
 
 func TestNewConfig(t *testing.T) {
-	godotenv.Load("../../.env.testing")
+	err := godotenv.Load("../../.env.testing")
+	if err != nil {
+		t.Fatal(err)
+	}
 	cfg := config.NewConfig()
 	assert.Equal(t, "fake-db", cfg.DbDriver)
 	assert.Equal(t, "fake-connection-string", cfg.DbConnectionsString)

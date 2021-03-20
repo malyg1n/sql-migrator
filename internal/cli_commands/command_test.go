@@ -6,12 +6,6 @@ import (
 	"testing"
 )
 
-type commandContract interface {
-	Help() string
-	Synopsis() string
-	Run(args []string) int
-}
-
 type serviceStub struct {
 }
 

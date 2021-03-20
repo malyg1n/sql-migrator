@@ -30,13 +30,13 @@ const (
 
 var (
 	st storeContract
-	db *sql.DB
 )
 
 func TestMain(m *testing.M) {
 	setUp()
-	defer tearDown()
-	m.Run()
+	code := m.Run()
+	tearDown()
+	os.Exit(code)
 }
 
 func TestMigrationsStore_CreateMigrationsTable(t *testing.T) {
@@ -48,9 +48,15 @@ func TestMigrationsStore_CreateMigrationsTable(t *testing.T) {
 }
 
 func TestMigrationsStore_ApplyMigrationsUp(t *testing.T) {
-	st.CreateMigrationsTable(getCreateMigrationsTableSql(tableName))
+	err := st.CreateMigrationsTable(getCreateMigrationsTableSql(tableName))
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	ms, err := st.GetMigrations()
-	assert.NoError(t, err)
+	if err != nil {
+		t.Fatal(err)
+	}
 	assert.Len(t, ms, 0)
 
 	testCases := []struct {
