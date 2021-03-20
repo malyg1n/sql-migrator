@@ -2,5 +2,4 @@
 .env
 .DS_Store
 migrations/*
-docker-compose.yml
 test.db

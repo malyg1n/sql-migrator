@@ -1,16 +1,20 @@
-package sql_migrator
+package cli_commands
 
-type ServiceContract interface {
+const (
+	exitStatusSuccess = 0
+	exitStatusError   = 1
+)
+
+type serviceContract interface {
 	Prepare() error
 	CreateMigrationFile(migrationName string) ([]string, error)
 	ApplyMigrationsUp() ([]string, error)
 	ApplyMigrationsDown() ([]string, error)
 	ApplyAllMigrationsDown() ([]string, error)
 	RefreshMigrations() ([]string, error)
-	GetMigrationUpFiles(folder string) ([]string, error)
-	FilterMigrations(dbMigrations []*MigrationEntity, files []string) []string
 }
 
-const (
-	timeFormat = "20060102150405"
-)
+// AbstractCommand
+type AbstractCommand struct {
+	service serviceContract
+}

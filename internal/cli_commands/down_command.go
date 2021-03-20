@@ -1,7 +1,7 @@
-package sql_migrator
+package cli_commands
 
 import (
-	"fmt"
+	"github.com/malyg1n/sql-migrator/internal/output"
 	"strings"
 )
 
@@ -9,7 +9,7 @@ type DownCommand struct {
 	AbstractCommand
 }
 
-func NewDownCommand(service ServiceContract) *DownCommand {
+func NewDownCommand(service serviceContract) *DownCommand {
 	return &DownCommand{
 		AbstractCommand{
 			service: service,
@@ -33,13 +33,14 @@ func (c *DownCommand) Synopsis() string {
 
 func (c *DownCommand) Run(args []string) int {
 	rolledBack, err := c.service.ApplyMigrationsDown()
+	console := output.NewConsoleOutput()
 	if err != nil {
-		ShowError(err.Error())
+		console.PrintError(err.Error())
 		return exitStatusError
 	}
 
 	for _, rb := range rolledBack {
-		ShowWarning(fmt.Sprintf("rolled back: %s", rb))
+		console.PrintWarning(rb)
 	}
 
 	return exitStatusSuccess
