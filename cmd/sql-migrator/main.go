@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"github.com/joho/godotenv"
 	"github.com/malyg1n/sql-migrator/internal/cli_commands"
+	"github.com/malyg1n/sql-migrator/internal/config"
 	"github.com/malyg1n/sql-migrator/internal/output"
 	"github.com/malyg1n/sql-migrator/internal/service"
 	"github.com/malyg1n/sql-migrator/internal/store"
@@ -26,7 +27,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	db, err := sql.Open(os.Getenv("DB_DRIVER"), os.Getenv("DB_DSN"))
+	cfg := config.NewConfig()
+
+	db, err := sql.Open(cfg.DbDriver, cfg.DbConnectionsString)
 	defer db.Close()
 
 	if err != nil {
@@ -34,8 +37,8 @@ func main() {
 		os.Exit(1)
 	}
 
-	store := store.NewStore(db, "schema_migrations", os.Getenv("DB_DRIVER"))
-	service := service.NewService(store, os.Getenv("MIGRATIONS_PATH"))
+	store := store.NewStore(db, "schema_migrations")
+	service := service.NewService(store, cfg)
 
 	c := cli.NewCLI("migrator", "0.0.5")
 	c.Args = os.Args[1:]

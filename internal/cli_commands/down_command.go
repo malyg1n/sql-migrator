@@ -1,7 +1,6 @@
 package cli_commands
 
 import (
-	"fmt"
 	"github.com/malyg1n/sql-migrator/internal/output"
 	"strings"
 )
@@ -41,7 +40,7 @@ func (c *DownCommand) Run(args []string) int {
 	}
 
 	for _, rb := range rolledBack {
-		console.PrintWarning(fmt.Sprintf("rolled back: %s", rb))
+		console.PrintWarning(rb)
 	}
 
 	return exitStatusSuccess

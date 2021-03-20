@@ -13,7 +13,6 @@ import (
 )
 
 type storeContract interface {
-	GetDbDriver() string
 	CreateMigrationsTable(query string) error
 	GetMigrations() ([]*entity.MigrationEntity, error)
 	GetMigrationsByVersion(version uint) ([]*entity.MigrationEntity, error)
@@ -38,10 +37,6 @@ func TestMain(m *testing.M) {
 	setUp()
 	defer tearDown()
 	m.Run()
-}
-
-func TestMigrationsStore_GetDbDriver(t *testing.T) {
-	assert.Equal(t, dbDriver, st.GetDbDriver())
 }
 
 func TestMigrationsStore_CreateMigrationsTable(t *testing.T) {
@@ -187,7 +182,7 @@ func setUp() {
 	if err != nil {
 		panic(err)
 	}
-	st = store.NewStore(db, tableName, dbDriver)
+	st = store.NewStore(db, tableName)
 }
 
 func tearDown() {

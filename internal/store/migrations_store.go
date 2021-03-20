@@ -20,19 +20,13 @@ type dBContract interface {
 type MigrationsStore struct {
 	db        dBContract
 	tableName string
-	dbDriver  string
 }
 
-func NewStore(db dBContract, tableName, dbDriver string) *MigrationsStore {
+func NewStore(db dBContract, tableName string) *MigrationsStore {
 	return &MigrationsStore{
 		db:        db,
 		tableName: tableName,
-		dbDriver:  dbDriver,
 	}
-}
-
-func (s *MigrationsStore) GetDbDriver() string {
-	return s.dbDriver
 }
 
 func (s *MigrationsStore) CreateMigrationsTable(query string) error {
