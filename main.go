@@ -55,7 +55,7 @@ func main() {
 	store := store.NewStore(db, migrationsTableName)
 	service := service.NewService(store, cfg)
 
-	newCLI := cli.NewCLI("migrator", "0.0.6")
+	newCLI := cli.NewCLI("sql-migrator", "0.0.8")
 	newCLI.Args = os.Args[1:]
 	newCLI.Commands = map[string]cli.CommandFactory{
 		"init": func() (cli.Command, error) {

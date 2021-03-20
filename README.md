@@ -1,6 +1,6 @@
 # sql-migrator
 
-[![Version](https://img.shields.io/badge/version-v0.0.6-green.svg)](https://github.com/malyg1n/sql-migrator/releases)
+[![Version](https://img.shields.io/badge/version-v0.0.8-green.svg)](https://github.com/malyg1n/sql-migrator/releases)
 [![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://github.com/malyg1n/sql-migrator/blob/master/LICENSE.md)
 [![Coverage Status](https://coveralls.io/repos/github/malyg1n/sql-migrator/badge.svg?branch=master)](https://coveralls.io/github/malyg1n/sql-migrator?branch=master)
 
