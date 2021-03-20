@@ -3,12 +3,12 @@ package output
 import "fmt"
 
 const (
-	escCode      = "\x1b"
+	escCode      = "\u001B"
 	successColor = escCode + "[32m"
-	infoColor    = escCode + "[32m"
-	warningColor = escCode + "[32m"
-	errorColor   = escCode + "[32m"
-	resetColor   = escCode + "[32m"
+	infoColor    = escCode + "[34m"
+	warningColor = escCode + "[33m"
+	errorColor   = escCode + "[31m"
+	resetColor   = escCode + "[0m"
 )
 
 type Console struct {

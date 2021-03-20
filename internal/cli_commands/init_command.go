@@ -40,6 +40,7 @@ func (c *InitCommand) Run(args []string) int {
 		console.PrintError(err.Error())
 		return exitStatusError
 	}
+
 	console.PrintSuccess("migrator was initialized")
 
 	return exitStatusSuccess
