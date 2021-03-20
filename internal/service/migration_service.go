@@ -1,7 +1,9 @@
-package sql_migrator
+package service
 
 import (
 	"fmt"
+	"github.com/malyg1n/sql-migrator/internal/config"
+	"github.com/malyg1n/sql-migrator/internal/entity"
 	"io/ioutil"
 	"os"
 	"path"
@@ -10,12 +12,26 @@ import (
 	"time"
 )
 
-type Service struct {
-	repo RepositoryContract
-	cfg  *Config
+type storeContract interface {
+	CreateMigrationsTable(query string) error
+	GetMigrations() ([]*entity.MigrationEntity, error)
+	GetMigrationsByVersion(version uint) ([]*entity.MigrationEntity, error)
+	GetLatestVersionNumber() (uint, error)
+	ApplyMigrationsUp(migrations []*entity.MigrationEntity) error
+	ApplyMigrationsDown(migrations []*entity.MigrationEntity) error
 }
 
-func NewService(repo RepositoryContract, cfg *Config) *Service {
+type Service struct {
+	repo storeContract
+	cfg  *config.Config
+}
+
+const (
+	prepareScriptsPath = "../../prepare/"
+	timeFormat         = "20060102150405"
+)
+
+func NewService(repo storeContract, cfg *config.Config) *Service {
 	return &Service{
 		repo: repo,
 		cfg:  cfg,
@@ -28,7 +44,7 @@ func (s *Service) Prepare() error {
 		return err
 	}
 
-	data, err := ioutil.ReadFile(s.cfg.Main.PrepareScriptsPath + s.cfg.DB.Driver + ".sql")
+	data, err := ioutil.ReadFile(prepareScriptsPath + s.cfg.DbDriver + ".sql")
 	if err != nil {
 		return err
 	}
@@ -36,14 +52,10 @@ func (s *Service) Prepare() error {
 	return s.repo.CreateMigrationsTable(string(data))
 }
 
-func (s *Service) createFolder() error {
-	return os.Mkdir(s.cfg.Main.MigrationsPath, 0764)
-}
-
 func (s *Service) CreateMigrationFile(migrationName string) ([]string, error) {
 	var messages []string
 	upFileName := fmt.Sprintf("%s-%s-up.sql", time.Now().Format(timeFormat), strings.TrimSpace(migrationName))
-	pathName := path.Join(s.cfg.Main.MigrationsPath, upFileName)
+	pathName := path.Join(s.cfg.MigrationsPath, upFileName)
 	fUp, err := os.Create(pathName)
 
 	if err != nil {
@@ -53,7 +65,7 @@ func (s *Service) CreateMigrationFile(migrationName string) ([]string, error) {
 	messages = append(messages, fmt.Sprintf("created migration %s", pathName))
 
 	downFileName := fmt.Sprintf("%s-%s-down.sql", time.Now().Format(timeFormat), strings.TrimSpace(migrationName))
-	pathName = path.Join(s.cfg.Main.MigrationsPath, downFileName)
+	pathName = path.Join(s.cfg.MigrationsPath, downFileName)
 	fDown, err := os.Create(pathName)
 
 	if err != nil {
@@ -76,12 +88,12 @@ func (s *Service) ApplyMigrationsUp() ([]string, error) {
 		return nil, err
 	}
 
-	files, err := s.GetMigrationUpFiles(s.cfg.Main.MigrationsPath)
+	files, err := s.getMigrationUpFiles(s.cfg.MigrationsPath)
 	if err != nil {
 		return nil, err
 	}
 
-	newMigrationsFiles := s.FilterMigrations(migrations, files)
+	newMigrationsFiles := s.filterMigrations(migrations, files)
 	if len(newMigrationsFiles) == 0 {
 		return nil, nil
 	}
@@ -95,18 +107,21 @@ func (s *Service) ApplyMigrationsUp() ([]string, error) {
 	version++
 
 	var migrated []string
+	var newMigrations []*entity.MigrationEntity
 
 	for _, file := range newMigrationsFiles {
 		data, err := ioutil.ReadFile(file)
 		if err != nil {
 			return nil, err
 		}
-		err = s.repo.ApplyMigrationsUp(file, string(data), version)
-		if err != nil {
-			return nil, err
-		}
-		migrated = append(migrated, file)
+		migrated = append(migrated, fmt.Sprintf("migrated: %s", file))
+		newMigrations = append(newMigrations, entity.NewMigrationEntity(file, string(data), version))
 	}
+	err = s.repo.ApplyMigrationsUp(newMigrations)
+	if err != nil {
+		return nil, err
+	}
+
 	return migrated, nil
 }
 
@@ -122,6 +137,7 @@ func (s *Service) ApplyMigrationsDown() ([]string, error) {
 	}
 
 	var rollback []string
+	var backMigrations []*entity.MigrationEntity
 
 	for _, m := range migrations {
 		filePath := strings.Replace(m.Migration, "-up.sql", "-down.sql", 1)
@@ -130,11 +146,13 @@ func (s *Service) ApplyMigrationsDown() ([]string, error) {
 			return nil, err
 		}
 
-		if err := s.repo.ApplyMigrationsDown(m.Id, string(data)); err != nil {
-			return nil, err
-		}
+		rollback = append(rollback, fmt.Sprintf("rolled back: %s", filePath))
+		backMigrations = append(backMigrations, entity.NewMigrationEntity(m.Migration, string(data), m.Version))
+	}
 
-		rollback = append(rollback, filePath)
+	err = s.repo.ApplyMigrationsDown(backMigrations)
+	if err != nil {
+		return nil, err
 	}
 
 	return rollback, err
@@ -148,6 +166,8 @@ func (s *Service) ApplyAllMigrationsDown() ([]string, error) {
 
 	var rollback []string
 
+	var backMigrations []*entity.MigrationEntity
+
 	for _, m := range migrations {
 		filePath := strings.Replace(m.Migration, "-up.sql", "-down.sql", 1)
 		data, err := ioutil.ReadFile(filePath)
@@ -155,11 +175,12 @@ func (s *Service) ApplyAllMigrationsDown() ([]string, error) {
 			return nil, err
 		}
 
-		if err := s.repo.ApplyMigrationsDown(m.Id, string(data)); err != nil {
-			return nil, err
-		}
+		rollback = append(rollback, fmt.Sprintf("rolled back: %s", filePath))
+		backMigrations = append(backMigrations, entity.NewMigrationEntity(m.Migration, string(data), m.Version))
+	}
 
-		rollback = append(rollback, filePath)
+	if err := s.repo.ApplyMigrationsDown(backMigrations); err != nil {
+		return nil, err
 	}
 
 	return rollback, err
@@ -178,17 +199,17 @@ func (s *Service) RefreshMigrations() ([]string, error) {
 	}
 
 	for _, rb := range rolledBack {
-		messages = append(messages, fmt.Sprintf("rolled back: %s", rb))
+		messages = append(messages, rb)
 	}
 
 	for _, m := range migrated {
-		messages = append(messages, fmt.Sprintf("migrated: %s", m))
+		messages = append(messages, m)
 	}
 
 	return messages, err
 }
 
-func (s *Service) GetMigrationUpFiles(folder string) ([]string, error) {
+func (s *Service) getMigrationUpFiles(folder string) ([]string, error) {
 	files := make([]string, 0)
 	err := filepath.Walk(folder, func(path string, info os.FileInfo, err error) error {
 		if strings.Contains(path, "-up.sql") {
@@ -203,7 +224,7 @@ func (s *Service) GetMigrationUpFiles(folder string) ([]string, error) {
 	return files, nil
 }
 
-func (s *Service) FilterMigrations(dbMigrations []*MigrationEntity, files []string) []string {
+func (s *Service) filterMigrations(dbMigrations []*entity.MigrationEntity, files []string) []string {
 	newFiles := make([]string, 0)
 	for _, file := range files {
 		found := false
@@ -218,4 +239,8 @@ func (s *Service) FilterMigrations(dbMigrations []*MigrationEntity, files []stri
 		}
 	}
 	return newFiles
+}
+
+func (s *Service) createFolder() error {
+	return os.Mkdir(s.cfg.MigrationsPath, 0764)
 }

@@ -1,8 +1,9 @@
-package sql_migrator
+package cli_commands
 
 import (
 	"flag"
 	"fmt"
+	"github.com/malyg1n/sql-migrator/internal/output"
 	"strings"
 )
 
@@ -16,7 +17,7 @@ var (
 )
 
 // Return command instance
-func NewCreateCommand(service ServiceContract) *CreateCommand {
+func NewCreateCommand(service serviceContract) *CreateCommand {
 	return &CreateCommand{
 		AbstractCommand{
 			service: service,
@@ -46,21 +47,22 @@ func (c *CreateCommand) Run(args []string) int {
 	flags := flag.NewFlagSet("create", flag.ContinueOnError)
 	flags.Parse(args)
 	migrationName = flags.Arg(0)
+	console := output.NewConsoleOutput()
 
 	if migrationName == "" {
-		ShowError("empty migration name")
+		console.PrintError("empty migration name")
 		return exitStatusError
 	}
 
 	files, err := c.service.CreateMigrationFile(migrationName)
 
 	if err != nil {
-		ShowError(err.Error())
+		console.PrintError(err.Error())
 		return exitStatusError
 	}
 
 	for _, f := range files {
-		ShowMessage(fmt.Sprintf("created empty migration in: %s", f))
+		console.PrintSuccess(fmt.Sprintf("created empty migration in: %s", f))
 	}
 
 	return exitStatusSuccess

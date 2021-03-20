@@ -1,0 +1,25 @@
+version: '3.7'
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  pg-data:
+
+services:
+
+  postgres:
+    image: postgres:latest
+    restart: on-failure
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_USER: forge
+      POSTGRES_PASSWORD: secret
+    volumes:
+      - pg-data:/var/lib/postgresql/data:cached
+    ports:
+      - 5432
+      - '6432:5432'
+    networks:
+      - app-network
