@@ -54,7 +54,7 @@ func main() {
 
 // Init cli commands
 func initCommands(service *service.Service) (int, error) {
-	newCLI := cli.NewCLI("sql-migrator", "0.1.0")
+	newCLI := cli.NewCLI("sql-migrator", "0.1.1")
 	newCLI.Args = os.Args[1:]
 	newCLI.Commands = map[string]cli.CommandFactory{
 		"init": func() (cli.Command, error) {
