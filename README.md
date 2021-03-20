@@ -13,7 +13,7 @@ The package includes the following drivers: [`postgres`](https://github.com/lib/
 ```
 go get -u github.com/malyg1n/sql-migrator
 ```
-Create a file `.env` by copying from `[.env.example](https://github.com/malyg1n/sql-migrator/tree/master/examples/.env.example)` and specify your database settings.
+Create a file `.env` by copying from [`.env.example`](https://github.com/malyg1n/sql-migrator/tree/master/examples/.env.example) and specify your database settings.
 In the same file, specify the folder for migrations (`migrations` in root of project by default). 
 After that, tou need to run the command:
 ```bigquery
