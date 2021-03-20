@@ -1,10 +1,11 @@
 # sql-migrator
 
-[![Version](https://img.shields.io/badge/version-v0.0.8-green.svg)](https://github.com/malyg1n/sql-migrator/releases)
+[![Version](https://img.shields.io/badge/version-v0.1.0-green.svg)](https://github.com/malyg1n/sql-migrator/releases)
 [![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://github.com/malyg1n/sql-migrator/blob/master/LICENSE.md)
 [![Coverage Status](https://coveralls.io/repos/github/malyg1n/sql-migrator/badge.svg?branch=master)](https://coveralls.io/github/malyg1n/sql-migrator?branch=master)
+[![Go Report Card](https://goreportcard.com/badge/github.com/malyg1n/sql-migrator)](https://goreportcard.com/report/github.com/malyg1n/sql-migrator)
 
-Golang utility for managing migrations using [`database/sql`](https://golang.org/pkg/database/sql).
+Golang utility for managing sql migrations using.
 
 The package includes the following drivers: [`postgres`](https://github.com/lib/pq), [`mysql`](https://github.com/go-sql-driver/mysql), [`sqlite3`](https://github.com/mattn/go-sqlite3).
 ## Usage
