@@ -236,5 +236,9 @@ func (s *Service) filterMigrations(dbMigrations []*entity.MigrationEntity, files
 }
 
 func (s *Service) createFolder() error {
-	return os.Mkdir(s.cfg.MigrationsPath, 0764)
+	if _, err := os.Stat(s.cfg.MigrationsPath); os.IsExist(err) {
+		return os.Mkdir(s.cfg.MigrationsPath, 0764)
+	}
+
+	return nil
 }

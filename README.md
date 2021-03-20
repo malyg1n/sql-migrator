@@ -1,6 +1,6 @@
 # sql-migrator
 
-[![Version](https://img.shields.io/badge/version-v0.0.5-green.svg)](https://github.com/malyg1n/sql-migrator/releases)
+[![Version](https://img.shields.io/badge/version-v0.0.6-green.svg)](https://github.com/malyg1n/sql-migrator/releases)
 [![license](http://img.shields.io/badge/license-MIT-red.svg?style=flat)](https://github.com/malyg1n/sql-migrator/blob/master/LICENSE.md)
 [![Coverage Status](https://coveralls.io/repos/github/malyg1n/sql-migrator/badge.svg?branch=master)](https://coveralls.io/github/malyg1n/sql-migrator?branch=master)
 
@@ -13,26 +13,26 @@ The package includes the following drivers: [`postgres`](https://github.com/lib/
 ```
 go get -u github.com/malyg1n/sql-migrator
 ```
-Create a file `.env` by copying from `.env.example` and specify your database settings.
+Create a file `.env` by copying from `[.env.example](https://github.com/malyg1n/sql-migrator/tree/master/examples/.env.example)` and specify your database settings.
 In the same file, specify the folder for migrations (`migrations` in root of project by default). 
 After that, tou need to run the command:
 ```bigquery
 sql-migrator init
 ```
-This command creates table and directory to store your migrations.
+This command creates table and directory (if not exists) to store your migrations.
 ### Create migration files.
 At the root of the project, you need to run a command with the following signature:
 ```bigquery
 sql-migrator create migration-name
 ```
-Example:
+Like this:
 ```bigquery
 sql-migrator create create-users-table
 ```
 After that, two files will appear in the migrations' folder at the root of the project.
 ```bigquery
-[date]-create-users-table-up.sql
-[date]-create-users-table-down.sql
+00001-create-users-table-up.sql
+00001-create-users-table-down.sql
 ```
 They need to write SQL code for rolling and rolling back migration, respectively.
 
