@@ -38,12 +38,7 @@ func (s *Service) Prepare() error {
 		return err
 	}
 
-	data, err := ioutil.ReadFile(path.Join(s.cfg.PrepareScriptsPath, s.cfg.DbDriver+".sql"))
-	if err != nil {
-		return err
-	}
-
-	return s.repo.CreateMigrationsTable(string(data))
+	return s.repo.CreateMigrationsTable(s.getPrepareSqlRequestByDriver())
 }
 
 func (s *Service) CreateMigrationFile(migrationName string) ([]string, error) {
@@ -233,6 +228,17 @@ func (s *Service) filterMigrations(dbMigrations []*entity.MigrationEntity, files
 		}
 	}
 	return newFiles
+}
+
+func (s *Service) getPrepareSqlRequestByDriver() string {
+	switch s.cfg.DbDriver {
+	case "postgres":
+		return `CREATE TABLE IF NOT EXISTS schema_migrations (id bigserial not null primary key, migration varchar(255) not null unique, version int not null, created_at timestamp DEFAULT CURRENT_TIMESTAMP);`
+	case "mysql":
+		return `CREATE TABLE IF NOT EXISTS schema_migrations (id integer not null primary key auto_increment, migration varchar(255) not null unique, version int not null, created_at timestamp DEFAULT CURRENT_TIMESTAMP);`
+	default:
+		return `CREATE TABLE IF NOT EXISTS schema_migrations (id integer not null primary key autoincrement, migration varchar(255) not null unique, version int not null, created_at timestamp DEFAULT CURRENT_TIMESTAMP);`
+	}
 }
 
 func (s *Service) createFolder() error {

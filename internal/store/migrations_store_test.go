@@ -3,7 +3,6 @@ package store_test
 import (
 	"database/sql"
 	"fmt"
-	_ "github.com/lib/pq"
 	"github.com/malyg1n/sql-migrator/internal/entity"
 	"github.com/malyg1n/sql-migrator/internal/store"
 	_ "github.com/mattn/go-sqlite3"

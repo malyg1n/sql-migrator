@@ -231,7 +231,6 @@ func setUp() {
 	cfg := config.NewConfig()
 	cfg.DbDriver = "sqlite3"
 	cfg.MigrationsPath = "test_migration_folder"
-	cfg.PrepareScriptsPath = "../../prepare/"
 	repo := &migrationStoreStub{
 		tableName:      "test_schema_migrations_service",
 		fakeMigrations: make(map[string]*entity.MigrationEntity),
