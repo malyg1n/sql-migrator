@@ -1,8 +1,8 @@
 package commands
 
 const (
-	exitStatusSuccess = 0
-	exitStatusError   = 1
+	exitStatusSuccess = iota
+	exitStatusError
 )
 
 type serviceContract interface {

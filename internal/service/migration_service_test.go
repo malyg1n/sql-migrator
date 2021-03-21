@@ -135,8 +135,8 @@ func TestService_CreateMigrationFiles(t *testing.T) {
 	assert.Len(t, messages, 2)
 	assert.Equal(t, fmt.Sprintf("created migration %s", pathNameUp), messages[0])
 	assert.Equal(t, fmt.Sprintf("created migration %s", pathNameDown), messages[1])
-	os.Remove(pathNameUp)
-	os.Remove(pathNameDown)
+	_ = os.Remove(pathNameUp)
+	_ = os.Remove(pathNameDown)
 }
 
 func TestService_ApplyMigrationsUp(t *testing.T) {
@@ -235,11 +235,11 @@ func setUp() {
 		tableName:      "test_schema_migrations_service",
 		fakeMigrations: make(map[string]*entity.MigrationEntity),
 	}
-	srv = service.NewService(repo, cfg)
+	srv = service.NewMigrationService(repo, cfg)
 }
 
 func tearDown() {
-	os.RemoveAll(migrationFolder)
+	_ = os.RemoveAll(migrationFolder)
 }
 
 func createMigrationFiles(t *testing.T, filename string) {
