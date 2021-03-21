@@ -2,12 +2,12 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"github.com/joho/godotenv"
 	"github.com/malyg1n/sql-migrator/internal/commands"
 	"github.com/malyg1n/sql-migrator/internal/config"
 	"github.com/malyg1n/sql-migrator/internal/service"
 	"github.com/malyg1n/sql-migrator/internal/store"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -18,7 +18,11 @@ import (
 	"github.com/mitchellh/cli"
 )
 
-const migrationsTableName = "schema_migrations"
+const (
+	migrationsTableName = "schema_migrations"
+	exitStatusSuccess   = iota
+	exitStatusError
+)
 
 // main method
 func main() {
@@ -28,33 +32,32 @@ func main() {
 	cfg := config.NewConfig()
 	db, err := sql.Open(cfg.DbDriver, cfg.DbConnectionsString)
 	defer func() {
-		err := db.Close()
-		if err != nil {
-			fmt.Errorf("db wasn't closed correctly with error: %s", err.Error())
-			os.Exit(1)
-		}
+		_ = db.Close()
+		os.Exit(exitStatusError)
 	}()
 
 	if err != nil {
-		fmt.Errorf("db wasn't opened correctly with error: %s", err.Error())
-		os.Exit(1)
+		log.Fatal(err)
 	}
 
-	store := store.NewStore(db, migrationsTableName)
-	service := service.NewService(store, cfg)
+	if err := db.Ping(); err != nil {
+		log.Fatal(err)
+	}
 
-	status, err := initCommands(service)
+	st := store.NewStore(db, migrationsTableName)
+	srv := service.NewMigrationService(st, cfg)
+
+	status, err := initCommands(srv)
 	if err != nil {
-		fmt.Errorf("commands wasn't initialized with error: %s", err.Error())
-		os.Exit(1)
+		log.Fatal(err)
 	}
 
 	os.Exit(status)
 }
 
 // Init cli commands
-func initCommands(service *service.Service) (int, error) {
-	newCLI := cli.NewCLI("sql-migrator", "0.1.1")
+func initCommands(service *service.MigrationService) (int, error) {
+	newCLI := cli.NewCLI("sql-migrator", "0.1.3")
 	newCLI.Args = os.Args[1:]
 	newCLI.Commands = map[string]cli.CommandFactory{
 		"init": func() (cli.Command, error) {
@@ -86,7 +89,7 @@ func handleBreaker() {
 	signal.Notify(ch, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-ch
-		os.Exit(0)
+		os.Exit(exitStatusSuccess)
 	}()
 }
 
@@ -94,7 +97,6 @@ func handleBreaker() {
 func loadEnv() {
 	err := godotenv.Load()
 	if err != nil {
-		fmt.Errorf("error loading environment file with error: %s", err.Error())
-		os.Exit(1)
+		log.Fatal(err)
 	}
 }
